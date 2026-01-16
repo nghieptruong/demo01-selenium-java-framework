@@ -1,12 +1,20 @@
 package drivers;
 
+import config.ConfigManager;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 
 public class SafariDriverManager extends DriverManager {
 
     @Override
     public WebDriver createDriver() {
-        return new SafariDriver();
+        boolean eager = Boolean.parseBoolean(ConfigManager.getProperty("eagerPageLoadStrategy"));
+
+        SafariOptions options = new SafariOptions();
+        options.setPageLoadStrategy(eager ? PageLoadStrategy.EAGER : PageLoadStrategy.NORMAL);
+
+        return new SafariDriver(options);
     }
 }

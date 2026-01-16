@@ -1,5 +1,6 @@
 package base;
 
+import config.ConfigManager;
 import drivers.DriverManagerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,8 +31,17 @@ public class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
     public void beforeMethod(Method method) {
+        // Get browser name from system property, config.properties, or default to "chrome"
+        String browserName = System.getProperty("browser");
+        if (browserName == null || browserName.isEmpty()) {
+            browserName = ConfigManager.getProperty("browser");
+        }
+        if (browserName == null || browserName.isEmpty()) {
+            browserName = "chrome"; // Default fallback
+        }
+
         // Create a new WebDriver for this thread
-        driver.set(DriverManagerFactory.getDriverManager("chrome").createDriver());
+        driver.set(DriverManagerFactory.getDriverManager(browserName).createDriver());
         getDriver().manage().window().maximize();
 
         LOG.info("Thread: " + Thread.currentThread().threadId() + " - [setUp] - WebDriver Instance: " + driver);

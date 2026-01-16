@@ -122,7 +122,6 @@ Main configuration file for application settings:
 ```properties
 # Browser Configuration
 browser=chrome
-headless=false
 
 # Page Load Strategy
 eagerPageLoadStrategy=true
@@ -131,21 +130,31 @@ eagerPageLoadStrategy=true
 base.url=https://demo1.cybersoft.edu.vn
 ```
 
+**Supported browsers:** chrome, firefox, edge, safari
+
 ### 2. Configuration Priority
 
 The framework supports multiple configuration sources with the following precedence:
 
 1. **System Properties** (highest priority)
    ```bash
-   gradlew test -Dbase.url=https://staging.example.com
+   # Run with Firefox instead of Chrome
+   gradlew test -Dbrowser=firefox
+   
+   # Multiple properties
+   gradlew test -Dbrowser=edge -Dbase.url=https://staging.example.com
    ```
 
 2. **Environment Variables**
    ```bash
-   export BASE_URL=https://staging.example.com
+   set BASE_URL=https://staging.example.com
    ```
 
 3. **config.properties file**
+   ```properties
+   browser=chrome
+   base.url=https://demo1.cybersoft.edu.vn
+   ```
 
 4. **Default values** (lowest priority)
 
@@ -304,7 +313,7 @@ Adjust `thread-count` based on your system resources.
 ## Reporting
 The framework uses **ExtentReports** as the primary reporting solution. TestNG executes the tests and triggers ExtentReports through the `TestListener` class, creating comprehensive HTML reports with rich visualizations.
 
-### How it works
+### How It Works
 
 ```
 TestNG (Test Execution) → TestListener (Hooks) → ExtentReportManager → ExtentReport.html
@@ -333,13 +342,21 @@ start test-output\ExtentReport.html
 open test-output/ExtentReport.html
 ```
 
-### TestNG Default Reports
+### TestNG Configuration
 
-TestNG also generates its own basic HTML reports (optional reference):
+TestNG default HTML reporters are **disabled** in this framework to keep the `test-output/` folder clean:
 
-- **Location:** `test-output/index.html`
-- **Purpose:** Native TestNG output for quick reference
-- **Note:** ExtentReports is the recommended report to review
+```groovy
+useDefaultListeners = false  // Only ExtentReports is generated
+```
+
+**Why disabled?**
+- ExtentReports provides superior reporting capabilities
+- Prevents duplicate/unnecessary HTML files
+- Keeps test-output folder clean and focused
+- Faster test execution (less I/O overhead)
+
+**Note:** If you need TestNG's default reports, set `useDefaultListeners = true` in `build.gradle`
 
 
 ---

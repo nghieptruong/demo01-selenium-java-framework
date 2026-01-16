@@ -116,11 +116,11 @@ public class AccountPage extends CommonPage {
     }
 
     public boolean isUpdateAlertDisplayed() {
-        return isElementDisplayed(alertFormFeedback, 2);
+        return isElementDisplayed(alertFormFeedback, 5);
     }
 
     public boolean isNameValidationErrorDisplayed() {
-        return isElementDisplayed(lblFullNameError, 2);
+        return isElementDisplayed(lblFullNameError);
     }
 
     public String getNameValidationErrorText() {
@@ -128,7 +128,7 @@ public class AccountPage extends CommonPage {
     }
 
     public boolean isEmailValidationErrorDisplayed() {
-        return isElementDisplayed(lblEmailError, 2);
+        return isElementDisplayed(lblEmailError);
     }
 
     public String getEmailValidationErrorText() {
@@ -136,7 +136,7 @@ public class AccountPage extends CommonPage {
     }
 
     public boolean isPasswordValidationErrorDisplayed() {
-        return isElementDisplayed(lblPasswordError, 2);
+        return isElementDisplayed(lblPasswordError);
     }
 
     public String getPasswordValidationErrorText() {

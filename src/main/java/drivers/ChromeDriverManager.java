@@ -17,7 +17,6 @@ public class ChromeDriverManager extends DriverManager {
         options.setPageLoadStrategy(eager ? PageLoadStrategy.EAGER : PageLoadStrategy.NORMAL);
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setExperimentalOption("useAutomationExtension", false);
-//        options.setBrowserVersion("137"); // chay voi browser chrome version 137
 
        return new ChromeDriver(options);
     }

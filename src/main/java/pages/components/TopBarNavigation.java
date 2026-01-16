@@ -37,10 +37,6 @@ public class TopBarNavigation extends BasePage {
         PageFactory.initElements(driver, this);
     }
 
-    public void clickUserProfileLink() {
-       click(lnkUserProfile);
-    }
-
     public void clickLogoutLink() {
        click(lnkLogout);
     }
@@ -69,7 +65,7 @@ public class TopBarNavigation extends BasePage {
     }
 
     public boolean isUserProfileVisible() {
-        return isElementDisplayed(lnkUserProfile);
+        return isElementDisplayed(lnkUserProfile, 5);
     }
 
     public boolean isLoginLinkVisible() {

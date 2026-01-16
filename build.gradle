@@ -28,7 +28,7 @@ dependencies {
 // Default test task - runs testng.xml suite (organized test structure)
 test {
     useTestNG() {
-        useDefaultListeners = true //dùng để tạo report testNG
+        useDefaultListeners = false // Disable TestNG HTML reports (using ExtentReports instead)
         outputDirectory = file("$projectDir/test-output") // folder chứa testNG report
         suites "src/test/resources/testng.xml"
 

@@ -60,15 +60,15 @@ public class LoginPage extends CommonPage {
     }
 
     public boolean isLoginSuccessMessageDisplayed() {
-        return isElementDisplayed(alertLoginSuccess, 2);
+        return isElementDisplayed(alertLoginSuccess, 3);
     }
 
     public boolean isInvalidPasswordMessageDisplayed() {
-        return isElementDisplayed(lblInvalidPasswordMsg, 2);
+        return isElementDisplayed(lblInvalidPasswordMsg, 3);
     }
 
     public boolean isLoginErrorMessageDisplayed() {
-        return isElementDisplayed(alertLoginError, 2);
+        return isElementDisplayed(alertLoginError, 3);
     }
 
     public String getLoginSuccessMsgText() {

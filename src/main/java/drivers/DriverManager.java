@@ -6,7 +6,7 @@ import org.openqa.selenium.WebDriver;
 
 public abstract class DriverManager {
 
-    private static final Logger logger = LogManager.getLogger(DriverManager.class);
+//    private static final Logger logger = LogManager.getLogger(DriverManager.class);
     private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
     public abstract WebDriver createDriver();
