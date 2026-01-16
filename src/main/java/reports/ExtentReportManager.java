@@ -51,6 +51,17 @@ public class ExtentReportManager {
         getTest().fail(msg);
     }
 
+    public static void skip(String msg) {
+        getTest().skip(msg);
+    }
+
+    /**
+     * Capture screenshot and attach to ExtentReport.
+     * Can be called during soft assertions or on final test failure.
+     *
+     * @param driver WebDriver instance
+     * @param testName Name of the test (used for screenshot filename)
+     */
     public static void captureScreenshot(WebDriver driver, String testName) {
         TakesScreenshot screenshot = (TakesScreenshot) driver;
         File sourceFile = screenshot.getScreenshotAs(OutputType.FILE);

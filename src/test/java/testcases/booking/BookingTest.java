@@ -16,11 +16,14 @@ import reports.ExtentReportManager;
 
 import java.util.List;
 
+import static helpers.AssertionHelper.verifySoftEquals;
+import static helpers.AssertionHelper.verifySoftFalse;
+
 public class BookingTest extends BaseTest {
 
     ShowtimePage showtimePage;
 
-    @Test(groups = {"integration", "booking", "smoke"})
+    @Test(groups = {"integration", "booking", "smoke", "critical"})
     public void testValidBookingLoggedinUser() throws Exception {
         SoftAssert softAssert = new SoftAssert();
 
@@ -109,22 +112,22 @@ public class BookingTest extends BaseTest {
         // Verify success by checking alert message and seat availability, current website did not implement payment flow
         String expectedMsg = Messages.getBookingSuccessMessage();
         String actualMsg = showtimePage.getBookingAlertText();
-        verifySoftEquals(actualMsg, expectedMsg, "Booking success message text", softAssert);
+        verifySoftEquals(actualMsg, expectedMsg, "Booking success message text", getDriver(), softAssert);
 
         showtimePage.refreshPage();
         verifySoftFalse(showtimePage.areSeatsAvailable(bookedSeats),
-                "Booked seats are no longer available", softAssert);
+                "Booked seats are no longer available", getDriver(), softAssert);
     }
 
     private void verifyBookingBlockedForGuest(List<String> selectedSeats, SoftAssert softAssert) {
         String expectedMsg = Messages.getUnauthenticatedBookingError();
         String actualMsg = showtimePage.getBookingAlertText();
-        verifySoftEquals(actualMsg, expectedMsg, "Unauthenticated booking error text", softAssert);
+        verifySoftEquals(actualMsg, expectedMsg, "Unauthenticated booking error text",getDriver(), softAssert);
 
         showtimePage.refreshPage();
         verifySoftFalse(showtimePage.areSeatsAvailable(selectedSeats),
                 "Verify selected seats are still available after failed booking attempt by guest",
-                softAssert);
+                getDriver(), softAssert);
     }
 
 }

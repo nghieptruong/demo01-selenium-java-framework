@@ -78,8 +78,6 @@ public class ShowtimeFilterTest extends BaseTest {
             homePage.showtimeFilterDropdowns.selectMovieByMovieTitle(movie);
             List<String> cinemasFromUI = homePage.showtimeFilterDropdowns.getCinemaLocationOptionsText();
 
-            System.out.println(movie + " -> " + cinemasFromUI);
-
             ExtentReportManager.info("Verify cinema dropdown options match API data for movie: " + movie);
             try {
                 verifyApiAndUiDataConsistency(cinemasFromAPI, cinemasFromUI);
@@ -88,7 +86,6 @@ public class ShowtimeFilterTest extends BaseTest {
             }
         }
     }
-
 
     @Test(groups = {"component", "browsing", "showtimeFilters"})
     public void testShowtimeFilterDefaultSelection() {

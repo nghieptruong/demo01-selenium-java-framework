@@ -15,9 +15,8 @@
 
     <test name="End-to-End User Journeys">
         <classes>
-            <class name="testcases.e2e.RegisterLoginE2ETest" />
+            <class name="testcases.e2e.AuthAndAccountE2ETest" />
             <class name="testcases.e2e.CompleteBookingFlowE2ETest" />
-            <class name="testcases.e2e.AccountManagementE2ETest" />
         </classes>
     </test>
 

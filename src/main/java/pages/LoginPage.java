@@ -60,7 +60,7 @@ public class LoginPage extends CommonPage {
     }
 
     public boolean isLoginSuccessMessageDisplayed() {
-        return isElementDisplayed(alertLoginSuccess, 3);
+        return isElementDisplayed(alertLoginSuccess);
     }
 
     public boolean isInvalidPasswordMessageDisplayed() {

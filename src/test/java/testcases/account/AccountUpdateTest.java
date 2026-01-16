@@ -13,6 +13,8 @@ import pages.AccountPage;
 import pages.LoginPage;
 import reports.ExtentReportManager;
 
+import static helpers.AssertionHelper.*;
+
 public class AccountUpdateTest extends BaseTest {
 
     private AccountPage accountPage;
@@ -70,7 +72,7 @@ public class AccountUpdateTest extends BaseTest {
         revertAccountChanges(originalName, originalEmail, originalPhone);
     }
 
-    @Test(groups = {"integration", "auth", "account", "smoke"})
+    @Test(groups = {"integration", "auth", "account", "smoke", "critical"})
     public void testValidUpdate_Password() {
         SoftAssert softAssert = new SoftAssert();
 
@@ -121,7 +123,7 @@ public class AccountUpdateTest extends BaseTest {
         softAssert.assertAll();
     }
 
-    @Test(groups = {"component", "auth", "account", "negative"})
+    @Test(groups = {"component", "auth", "account", "negative", "critical"})
     public void testInvalidUpdate_ShortPassword() {
 
         SoftAssert softAssert = new SoftAssert();
@@ -138,7 +140,7 @@ public class AccountUpdateTest extends BaseTest {
         softAssert.assertAll();
     }
 
-    @Test(groups = {"component", "auth", "account", "negative"})
+    @Test(groups = {"component", "auth", "account", "negative", "critical"})
     public void testUsernameReadonly() {
         SoftAssert softAssert = new SoftAssert();
 
@@ -162,7 +164,7 @@ public class AccountUpdateTest extends BaseTest {
         String expectedMsg = Messages.getAccountUpdateSuccessMessage();
         String actualMsg = accountPage.getUpdateAlertText();
 
-        verifySoftEquals(actualMsg, expectedMsg, "Account update success message text", softAssert);
+        verifySoftEquals(actualMsg, expectedMsg, "Account update success message text", getDriver(), softAssert);
     }
 
     private void verifyAccountInfoUpdateSuccess(String newName, String newEmail, String newPhone, SoftAssert softAssert) {
@@ -170,11 +172,11 @@ public class AccountUpdateTest extends BaseTest {
         accountPage.waitForUpdateAlertToDisappear();
 
         verifySoftEquals(accountPage.getFullName(), newName,
-                "Full Name in form after update", softAssert);
+                "Full Name in form after update", getDriver(), softAssert);
         verifySoftEquals(accountPage.getEmail(), newEmail,
-                "Email in form after update", softAssert);
+                "Email in form after update", getDriver(), softAssert);
         verifySoftEquals(accountPage.getPhoneNumber(), newPhone,
-                "Phone Number in form after update", softAssert);
+                "Phone Number in form after update", getDriver(), softAssert);
     }
 
     private void verifyPasswordUpdateSuccess(String newPassword, SoftAssert softAssert) {
@@ -182,7 +184,7 @@ public class AccountUpdateTest extends BaseTest {
         accountPage.waitForUpdateAlertToDisappear();
 
         verifySoftEquals(accountPage.getPassword(), newPassword,
-                "Password in form after update", softAssert);
+                "Password in form after update", getDriver(), softAssert);
 
         // move to e2e
 //        accountPage.topBarNavigation.logout();
@@ -196,57 +198,57 @@ public class AccountUpdateTest extends BaseTest {
 
     private void verifyUpdateFailureWithBlankEmail(SoftAssert softAssert) {
         verifySoftFalse(accountPage.isUpdateAlertDisplayed(),
-                "No update alert displayed for failed update with blank email", softAssert);
+                "No update alert displayed for failed update with blank email", getDriver(), softAssert);
 
         boolean emailErrorDisplayed = verifySoftTrue(accountPage.isEmailValidationErrorDisplayed(),
-                "Email validation error is displayed for blank email", softAssert);
+                "Email validation error is displayed for blank email", getDriver(), softAssert);
 
         if (emailErrorDisplayed) {
             String expectedErrorMsg = Messages.getRequiredFieldError();
             verifySoftEquals(expectedErrorMsg, accountPage.getEmailValidationErrorText(),
-                    "Email validation error message text", softAssert);
+                    "Email validation error message text", getDriver(), softAssert);
         }
 
         accountPage.refreshPage();
         String currentEmail = accountPage.getEmail();
 
         verifySoftEquals(currentEmail, originalEmail,
-                "Unchanged email after failed update", softAssert);
+                "Unchanged email after failed update", getDriver(), softAssert);
     }
 
     private void verifyUpdateFailureWithInvalidName(SoftAssert softAssert) {
         verifySoftFalse(accountPage.isUpdateAlertDisplayed(),
-                "No update alert displayed for failed update with invalid name", softAssert);
+                "No update alert displayed for failed update with invalid name", getDriver(), softAssert);
 
         boolean nameErrorDisplayed = verifySoftTrue(accountPage.isNameValidationErrorDisplayed(),
-                "Name validation error is displayed for invalid name", softAssert);
+                "Name validation error is displayed for invalid name", getDriver(), softAssert);
 
         if (nameErrorDisplayed) {
             String expectedErrorMsg = Messages.getNameContainsNumberError();
             verifySoftEquals(expectedErrorMsg, accountPage.getNameValidationErrorText(),
-                    "Name validation error message text", softAssert);
+                    "Name validation error message text", getDriver(), softAssert);
         }
 
         accountPage.refreshPage();
         verifySoftEquals(accountPage.getFullName(), originalName,
-                "Full Name remains unchanged after failed update", softAssert);
+                "Full Name remains unchanged after failed update", getDriver(), softAssert);
     }
 
     private void verifyUpdateFailureWithShortPassword(SoftAssert softAssert) {
         verifySoftFalse(accountPage.isUpdateAlertDisplayed(),
-                "No update alert displayed for failed update with invalid password", softAssert);
+                "No update alert displayed for failed update with invalid password", getDriver(), softAssert);
 
         boolean passwordErrorDisplayed = verifySoftTrue(accountPage.isPasswordValidationErrorDisplayed(),
-                "Password validation error is displayed for short password", softAssert);
+                "Password validation error is displayed for short password", getDriver(), softAssert);
 
         if (passwordErrorDisplayed) {
             String expectedErrorMsg = Messages.getPasswordMinLengthError();
             verifySoftEquals(expectedErrorMsg, accountPage.getPasswordValidationErrorText(),
-                    "Password validation error message text", softAssert);
+                    "Password validation error message text", getDriver(), softAssert);
         }
         accountPage.refreshPage();
         verifySoftEquals(accountPage.getPassword(), originalPassword,
-                "Password remains unchanged after failed update", softAssert);
+                "Password remains unchanged after failed update", getDriver(), softAssert);
 
         //move this to e2e tests
 //        ExtentReportManager.info("Logout and verify login fails with new short password and succeeds with original password");
@@ -274,7 +276,7 @@ public class AccountUpdateTest extends BaseTest {
         accountPage.refreshPage();
         String currentUsername = accountPage.getUsername();
         verifySoftEquals(currentUsername, originalUsername,
-                "Username displayed in form remains unchanged after update attempt", softAssert);
+                "Username displayed in form remains unchanged after update attempt", getDriver(), softAssert);
 
         accountPage.topBarNavigation.logout();
         LoginPage loginPage = new LoginPage(getDriver());
@@ -282,16 +284,16 @@ public class AccountUpdateTest extends BaseTest {
         loginPage.fillLoginFormAndSubmit(newUsername, originalPassword);
 
         verifySoftTrue(loginPage.isLoginErrorMessageDisplayed(),
-                "Login error displayed for attempted new username", softAssert);
+                "Login error displayed for attempted new username", getDriver(), softAssert);
 
         verifySoftFalse(loginPage.topBarNavigation.isUserProfileVisible(),
-                "Login failed with attempted new username", softAssert);
+                "Login failed with attempted new username", getDriver(), softAssert);
 
         loginPage.refreshPage();
         loginPage.fillLoginFormAndSubmit(originalUsername, originalPassword);
 
         verifySoftTrue(loginPage.topBarNavigation.isUserProfileVisible(),
-                "Login successful with original username", softAssert);
+                "Login successful with original username", getDriver(), softAssert);
     }
 
     private void revertAccountChanges(String originalName, String originalEmail, String originalPhone) {

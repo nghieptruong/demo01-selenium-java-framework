@@ -11,6 +11,10 @@ import pages.HomePage;
 import pages.LoginPage;
 import reports.ExtentReportManager;
 
+import static helpers.AssertionHelper.verifySoftFalse;
+import static helpers.AssertionHelper.verifySoftTrue;
+import static helpers.AuthVerificationHelper.verifyLogoutSuccess;
+
 public class LogoutTest extends BaseTest {
 
     private HomePage homePage;
@@ -34,7 +38,7 @@ public class LogoutTest extends BaseTest {
         }
     }
 
-    @Test(groups = {"integration", "auth", "logout", "smoke"})
+    @Test(groups = {"integration", "auth", "logout", "smoke", "critical"})
     public void testValidLogout() {
         SoftAssert softAssert = new SoftAssert();
 
@@ -42,7 +46,7 @@ public class LogoutTest extends BaseTest {
         homePage.topBarNavigation.logout();
 
         ExtentReportManager.info("Verify logout success");
-        verifyLogoutSuccess(softAssert);
+        verifyLogoutSuccess(homePage, getDriver(), softAssert);
 
         softAssert.assertAll();
     }
@@ -56,7 +60,7 @@ public class LogoutTest extends BaseTest {
         homePage.topBarNavigation.cancelLogout();
 
         ExtentReportManager.info("Verify user is not logged out");
-        verifyUserNotLoggedOut(softAssert);
+        verifyLogoutCancelled(softAssert);
 
         softAssert.assertAll();
     }
@@ -64,25 +68,15 @@ public class LogoutTest extends BaseTest {
     // --------------------------
     // Helper methods for verification
     // --------------------------
-    private void verifyLogoutSuccess(SoftAssert softAssert) {
-        verifySoftTrue(homePage.topBarNavigation.isLogoutSuccessAlertVisible(),
-                "Logout success alert is visible", softAssert);
 
-        verifySoftTrue(homePage.topBarNavigation.isLoginLinkVisible(),
-                "Login link should be visible after logout", softAssert);
-
-        verifySoftFalse(homePage.topBarNavigation.isUserProfileVisible(),
-                "User profile should not be visible after logout", softAssert);
-    }
-
-    private void verifyUserNotLoggedOut(SoftAssert softAssert) {
+    private void verifyLogoutCancelled(SoftAssert softAssert) {
         verifySoftFalse(homePage.topBarNavigation.isLogoutSuccessAlertVisible(),
-                "Logout success alert should not be visible after cancelling logout", softAssert);
+                "Logout success alert should not be visible after cancelling logout", getDriver(), softAssert);
 
         verifySoftTrue(homePage.topBarNavigation.isUserProfileVisible(),
-                "User profile should still be visible after cancelling logout", softAssert);
+                "User profile should still be visible after cancelling logout", getDriver(), softAssert);
 
         verifySoftFalse(homePage.topBarNavigation.isLoginLinkVisible(),
-                "Login link should not be visible after cancelling logout", softAssert);
+                "Login link should not be visible after cancelling logout", getDriver(), softAssert);
     }
 }
