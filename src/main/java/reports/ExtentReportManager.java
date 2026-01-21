@@ -56,6 +56,10 @@ public class ExtentReportManager {
         getTest().fail(msg);
     }
 
+    public static void warn(String msg) {
+        getTest().warning(msg);
+    }
+
     public static void skip(String msg) {
         getTest().skip(msg);
     }

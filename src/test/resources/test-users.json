@@ -1,19 +1,19 @@
 {
-  "basicUser": {
+  "user_basic": {
     "username": "testUser.primary",
     "password": "Test123456@",
     "fullName": "TenTen",
     "email": "testUser.primary@email.com",
     "phoneNr": "12345678"
   },
-  "accountUpdateUser": {
+  "user_account_update": {
     "username": "singapore",
     "password": "Singapore1!",
     "fullName": "Singaporean",
     "email": "singapore@hotmail.com",
     "phoneNr": "123462677"
   },
-  "bookingUser": {
+  "user_booking": {
     "username": "bookingUser1",
     "password": "123456",
     "fullName": "bookingUserOne",

@@ -1,21 +1,26 @@
 package testcases.e2e;
 
+import api.services.UserService;
 import base.BaseTest;
-import helpers.BookingHelper;
-import helpers.TestUserProvider;
-import model.TestUser;
-import model.TestUserType;
+import helpers.actions.BookingActionHelper;
+import helpers.providers.BookingSamplesProvider;
+import helpers.verifications.BookingVerificationHelper;
+import model.ui.LoginInputs;
+import model.api.request.RegisterRequest;
+import model.api.response.ShowtimeBooking;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 import pages.HomePage;
 import pages.LoginPage;
-import pages.ShowtimePage;
+import pages.BookingPage;
 import reports.ExtentReportManager;
 
 import java.util.List;
 
-import static helpers.AuthVerificationHelper.verifyLoginSuccess;
+import static helpers.providers.AuthTestDataGenerator.generateRegisterRequestPayload;
+import static helpers.verifications.AuthVerificationHelper.verifyLoginSuccess;
+import static helpers.utils.SoftAssertionHelper.verifySoftTrue;
 
 /**
  * E2E Test: Complete Booking Flow
@@ -25,15 +30,20 @@ public class CompleteBookingFlowE2ETest extends BaseTest {
 
     private LoginPage loginPage;
     private HomePage homePage;
-    private ShowtimePage showtimePage;
-    private TestUser testUser;
+    private BookingPage bookingPage;
+    private LoginInputs loginCredentials;
 
     @BeforeMethod
     public void setupMethod() {
         loginPage = new LoginPage(getDriver());
         homePage = new HomePage(getDriver());
-        showtimePage = new ShowtimePage(getDriver());
-        testUser = TestUserProvider.getUser(TestUserType.bookingUser);
+        bookingPage = new BookingPage(getDriver());
+
+        // Create a new user for booking and collect login credentials
+        RegisterRequest registerRequest = generateRegisterRequestPayload();
+        UserService userService = new UserService();
+        userService.sendRegisterRequest(registerRequest);
+        loginCredentials = new LoginInputs(registerRequest.getTaiKhoan(), registerRequest.getMatKhau());
     }
 
     @Test(groups = {"e2e", "booking", "critical"})
@@ -41,41 +51,53 @@ public class CompleteBookingFlowE2ETest extends BaseTest {
         SoftAssert softAssert = new SoftAssert();
 
         // ============================================
-        // Step 1: User logs in
+        // Step 1: User logs in (via UI - not API due to missing auth token)
         // ============================================
-        ExtentReportManager.info("Step 1: Navigate to login page and authenticate");
+        ExtentReportManager.info("Navigate to login page and log in");
         loginPage.navigateToLoginPage();
-        loginPage.fillLoginFormAndSubmit(testUser.getUsername(), testUser.getPassword());
+        loginPage.fillLoginFormAndSubmit(loginCredentials);
 
+//        loginPage.fillLoginFormAndSubmit(testUser.getUsername(), testUser.getPassword());
         verifyLoginSuccess(loginPage, getDriver(), softAssert);
 
         // ============================================
-        // Step 2: Navigate to homepage after login
+        // Step 2: Navigate to homepage after login if not redirected
         // ============================================
-        ExtentReportManager.info("Step 2: Navigate to homepage (if not redirected automatically after login)");
+        ExtentReportManager.info("Navigate to homepage (if not redirected after login)");
         boolean homepageRedirected = loginPage.isRedirectedToHomepage();
         if (!homepageRedirected) {
+            LOG.warn("User not redirected to homepage after login - navigating manually");
             homePage.navigateToHomePage();
         }
 
         // ============================================
         // Step 3: Select a movie showtime using filters
         // ============================================
-        ExtentReportManager.info("Step 3: Find and navigate to a showtime with available seats");
-        BookingHelper.navigateToAvailableShowtimePage(showtimePage);
+        ExtentReportManager.info("User filter to navigate to a showtime with available seats");
+        ShowtimeBooking showtimeWithSeats = BookingSamplesProvider.getShowtimeWithAvailableSeats(5, 1).get(0);
+
+        homePage.showtimeFilterDropdowns.applyFiltersAndFindTickets(
+                showtimeWithSeats.getMovieName(),
+                showtimeWithSeats.getCinemaBranchName(),
+                showtimeWithSeats.getShowtimeId()
+        );
+
+        boolean isNavigated = homePage.isOnShowtimePage(showtimeWithSeats.getShowtimeId());
+        verifySoftTrue(isNavigated, "User should be navigated to the selected showtime page", getDriver(), softAssert);
 
         // ============================================
         // Step 4: Select seats and book tickets
         // ============================================
-        ExtentReportManager.info("Step 4: Select available seats");
-        List<String> seatsToBook = BookingHelper.selectAvailableSeats(showtimePage, 2);
-        showtimePage.clickBookTicketsButton();
+        ExtentReportManager.info("Select random sample of available seats and book");
+        List<String> seatsToBook = BookingActionHelper.selectAvailableSeatsWithinRange(bookingPage, 2, 5);
+        bookingPage.selectAvailableSeats(seatsToBook);
+        bookingPage.clickBookTicketsButton();
 
         // ============================================
         // Step 5: Verify booking success
         // ============================================
-        ExtentReportManager.info("Step 6: Verify booking confirmation");
-        BookingHelper.verifyBookingSuccess(showtimePage, seatsToBook, getDriver(), softAssert);
+        ExtentReportManager.info("Verify booking success");
+        BookingVerificationHelper.verifyBookingSuccess(bookingPage, seatsToBook, getDriver(), softAssert);
 
         softAssert.assertAll();
         ExtentReportManager.info("E2E Flow completed successfully: Login → Browse → Select Showtime → Book → Verify");

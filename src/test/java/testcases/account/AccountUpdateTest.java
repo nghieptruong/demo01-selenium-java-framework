@@ -1,12 +1,12 @@
 package testcases.account;
 
 import base.BaseTest;
-import helpers.AccountVerificationHelper;
-import helpers.AuthTestDataGenerator;
-import helpers.Messages;
-import helpers.TestUserProvider;
-import model.TestUser;
+import helpers.verifications.AccountVerificationHelper;
+import helpers.providers.AuthTestDataGenerator;
+import helpers.utils.MessagesUI;
+import helpers.providers.TestUserProvider;
 import model.TestUserType;
+import model.ui.LoginInputs;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
@@ -14,12 +14,13 @@ import pages.AccountPage;
 import pages.LoginPage;
 import reports.ExtentReportManager;
 
-import static helpers.SoftAssertionHelper.*;
+import static helpers.utils.SoftAssertionHelper.*;
 
 public class AccountUpdateTest extends BaseTest {
 
     private AccountPage accountPage;
-    TestUser testUser;
+    private LoginInputs userCredentials;
+    private SoftAssert softAssert;
 
     // store originals so @AfterMethod can revert changes
     private String originalUsername;
@@ -31,17 +32,19 @@ public class AccountUpdateTest extends BaseTest {
     @BeforeMethod(alwaysRun = true)
     public void setUpMethod() {
         LoginPage loginPage = new LoginPage(getDriver());
-        testUser = TestUserProvider.getUser(TestUserType.accountUpdateUser);
-        originalUsername = testUser.getUsername();
+        softAssert = new SoftAssert();
 
         ExtentReportManager.info("Log in and navigate to Account page before test");
+        userCredentials = TestUserProvider.getUserCredentials(TestUserType.USER_ACCOUNT_UPDATE);
         loginPage.navigateToLoginPage();
-        loginPage.fillLoginFormAndSubmit(originalUsername, testUser.getPassword());
+        loginPage.fillLoginFormAndSubmit(userCredentials);
         loginPage.topBarNavigation.waitForUserProfileLink();
 
-        accountPage = new AccountPage(getDriver());
         // navigate to account page and capture current values for revert
+        accountPage = new AccountPage(getDriver());
+
         accountPage.navigateToAccountPage();
+        originalUsername = accountPage.getUsername();
         originalName = accountPage.getFullName();
         originalEmail = accountPage.getEmail();
         originalPhone = accountPage.getPhoneNumber();
@@ -49,54 +52,56 @@ public class AccountUpdateTest extends BaseTest {
     }
 
     @Test(groups = {"integration", "auth", "account", "smoke"})
-    public void testValidUpdate_AccountInfo() {
-        SoftAssert softAssert = new SoftAssert();
-
+    public void testValidUpdate_UserProfile() {
+        ExtentReportManager.info("Update user profile: new name, email, phone on Account Page");
+        // Generate new valid data
         String newName = AuthTestDataGenerator.generateNewName(originalName);
-        String newEmail = AuthTestDataGenerator.generateNewEmail(originalEmail);
+        String newEmail = AuthTestDataGenerator.generateNewUniqueEmail();
         String newPhone = AuthTestDataGenerator.generateNewPhoneNumber(originalPhone);
-
-        ExtentReportManager.info("Update new name, email, phone on Account Page");
+        // Update account info
         accountPage.changeAccountInfo(newName, newEmail, newPhone);
         accountPage.saveChanges();
 
-        ExtentReportManager.info("Verify account info update success");
-        AccountVerificationHelper.verifyAllAccountInfoUpdateSuccess(accountPage, newName, newEmail, newPhone, getDriver(), softAssert);
+        // Verify update success
+        ExtentReportManager.info("Verify user profile info update success");
+        AccountVerificationHelper.verifyAccountFieldsUpdateSuccess(accountPage, newName, newEmail, newPhone, getDriver(), softAssert);
 
         softAssert.assertAll();
 
+        // Revert changes
         ExtentReportManager.info("Reverting changes after test");
         revertAccountChanges(originalName, originalEmail, originalPhone);
     }
 
     @Test(groups = {"integration", "auth", "account", "smoke", "critical"})
     public void testValidUpdate_Password() {
-        SoftAssert softAssert = new SoftAssert();
-
+        ExtentReportManager.info("Update password on Account Page");
+        // Generate new valid password
         String newPassword = AuthTestDataGenerator.generateNewPassword(originalPassword);
 
-        ExtentReportManager.info("Update password on Account Page");
+        // Update password
         accountPage.changePassword(newPassword);
         accountPage.saveChanges();
 
+        // Verify update success
         ExtentReportManager.info("Verify password update success");
         AccountVerificationHelper.verifyPasswordUpdateSuccess(accountPage, newPassword,getDriver(), softAssert);
 
         softAssert.assertAll();
 
+        // Revert changes
         ExtentReportManager.info("Reverting changes after test");
         revertPasswordChange(originalPassword);
     }
 
     @Test(groups = {"component", "auth", "account", "negative"})
     public void testInvalidUpdate_BlankEmail() {
-
-        SoftAssert softAssert = new SoftAssert();
-
         ExtentReportManager.info("Attempt to update account with blank email");
+        // Set email to blank and save
         accountPage.changeEmail("");
         accountPage.saveChanges();
 
+        // Verify update failure due to validation
         ExtentReportManager.info("Verify update failed due to blank field validation");
         verifyUpdateFailureWithBlankEmail(softAssert);
 
@@ -105,15 +110,15 @@ public class AccountUpdateTest extends BaseTest {
 
     @Test(groups = {"component", "auth", "account", "negative"})
     public void testInvalidUpdate_InvalidName() {
-
-        SoftAssert softAssert = new SoftAssert();
-
+        // Generate invalid name containing numbers
         String invalidName = AuthTestDataGenerator.generateInvalidNameContainingNumbers();
-
         ExtentReportManager.info("Attempt to update account with invalid name: " + invalidName);
+
+        // Set invalid name and save
         accountPage.changeName(invalidName);
         accountPage.saveChanges();
 
+        // Verify update failure due to validation
         ExtentReportManager.info("Verify update failed due to invalid input validation");
         verifyUpdateFailureWithInvalidName(softAssert);
 
@@ -122,15 +127,15 @@ public class AccountUpdateTest extends BaseTest {
 
     @Test(groups = {"component", "auth", "account", "negative", "critical"})
     public void testInvalidUpdate_ShortPassword() {
-
-        SoftAssert softAssert = new SoftAssert();
-
+        // Generate short invalid password
         String shortPassword = AuthTestDataGenerator.generateInvalidShortPassword();
-
         ExtentReportManager.info("Attempt to update password with short password: " + shortPassword);
+
+        // Set short password and save
         accountPage.changePassword(shortPassword);
         accountPage.saveChanges();
 
+        // Verify update failure due to validation
         ExtentReportManager.info("Verify update failed due to short password validation");
         verifyUpdateFailureWithShortPassword(softAssert);
 
@@ -139,14 +144,15 @@ public class AccountUpdateTest extends BaseTest {
 
     @Test(groups = {"component", "auth", "account", "negative", "critical"})
     public void testUsernameReadonly() {
-        SoftAssert softAssert = new SoftAssert();
-
         ExtentReportManager.info("Attempt to change username (should be read-only)");
-        String newUsername = AuthTestDataGenerator.generateValidRegisterData().getUsername();
+        // Generate new username
+        String newUsername = AuthTestDataGenerator.generateValidRegisterFormInputs().getUsername();
 
+        // Attempt to change username and save
         accountPage.changeUsername(newUsername);
         accountPage.saveChanges();
 
+        // Verify username remains unchanged
         ExtentReportManager.info("Verify username remains unchanged after update attempt");
         verifyUsernameRemainsUnchanged(newUsername, softAssert);
 
@@ -162,7 +168,7 @@ public class AccountUpdateTest extends BaseTest {
                 "Email validation error is displayed for blank email", getDriver(), softAssert);
 
         if (emailErrorDisplayed) {
-            String expectedErrorMsg = Messages.getRequiredFieldError();
+            String expectedErrorMsg = MessagesUI.getRequiredFieldError();
             verifySoftEquals(expectedErrorMsg, accountPage.getEmailValidationErrorText(),
                     "Email validation error message text", getDriver(), softAssert);
         }
@@ -182,7 +188,7 @@ public class AccountUpdateTest extends BaseTest {
                 "Name validation error is displayed for invalid name", getDriver(), softAssert);
 
         if (nameErrorDisplayed) {
-            String expectedErrorMsg = Messages.getNameContainsNumberError();
+            String expectedErrorMsg = MessagesUI.getNameContainsNumberError();
             verifySoftEquals(expectedErrorMsg, accountPage.getNameValidationErrorText(),
                     "Name validation error message text", getDriver(), softAssert);
         }
@@ -200,7 +206,7 @@ public class AccountUpdateTest extends BaseTest {
                 "Password validation error is displayed for short password", getDriver(), softAssert);
 
         if (passwordErrorDisplayed) {
-            String expectedErrorMsg = Messages.getPasswordMinLengthError();
+            String expectedErrorMsg = MessagesUI.getPasswordMinLengthError();
             verifySoftEquals(expectedErrorMsg, accountPage.getPasswordValidationErrorText(),
                     "Password validation error message text", getDriver(), softAssert);
         }
@@ -259,5 +265,4 @@ public class AccountUpdateTest extends BaseTest {
         accountPage.saveChanges();
         accountPage.waitForUpdateAlert();
     }
-
 }

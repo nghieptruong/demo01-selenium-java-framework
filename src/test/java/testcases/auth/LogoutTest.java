@@ -1,7 +1,7 @@
 package testcases.auth;
 
 import base.BaseTest;
-import helpers.TestUserProvider;
+import helpers.providers.TestUserProvider;
 import model.TestUser;
 import model.TestUserType;
 import org.testng.annotations.BeforeMethod;
@@ -11,9 +11,9 @@ import pages.HomePage;
 import pages.LoginPage;
 import reports.ExtentReportManager;
 
-import static helpers.SoftAssertionHelper.verifySoftFalse;
-import static helpers.SoftAssertionHelper.verifySoftTrue;
-import static helpers.AuthVerificationHelper.verifyLogoutSuccess;
+import static helpers.utils.SoftAssertionHelper.verifySoftFalse;
+import static helpers.utils.SoftAssertionHelper.verifySoftTrue;
+import static helpers.verifications.AuthVerificationHelper.verifyLogoutSuccess;
 
 public class LogoutTest extends BaseTest {
 
@@ -24,7 +24,7 @@ public class LogoutTest extends BaseTest {
         LoginPage loginPage = new LoginPage(getDriver());
         homePage = new HomePage(getDriver());
 
-        TestUser testUser = TestUserProvider.getUser(TestUserType.basicUser);
+        TestUser testUser = TestUserProvider.getUser(TestUserType.USER_BASIC);
 
         ExtentReportManager.info("Log in and navigate to Homepage before test");
         loginPage.navigateToLoginPage();

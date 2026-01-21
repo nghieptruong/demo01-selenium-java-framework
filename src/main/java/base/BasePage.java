@@ -41,8 +41,12 @@ public class BasePage {
         return wait.until(ExpectedConditions.visibilityOf(element));
     }
 
-    public void waitForVisibilityOfAllElements(List<WebElement> elements) {
-        wait.until(ExpectedConditions.visibilityOfAllElements(elements));
+    public WebElement waitForVisibilityOfElementLocatedBy(By locator) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    public List<WebElement> waitForVisibilityOfAllElementsLocated(List<WebElement> elements) {
+        return wait.until(ExpectedConditions.visibilityOfAllElements(elements));
     }
 
     public void waitForInvisibilityOfElementLocated(WebElement element) {
@@ -55,6 +59,10 @@ public class BasePage {
 
     public WebElement waitForNestedElementToBePresent(WebElement parentElement, By childLocator) {
         return wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(parentElement, childLocator));
+    }
+
+    public List<WebElement> waitForAllNestedElementsToBePresent(By parentElement, By childLocator) {
+        return wait.until(ExpectedConditions.presenceOfNestedElementsLocatedBy(parentElement, childLocator));
     }
 
     // Wait for URL / partial URL
@@ -135,27 +143,15 @@ public class BasePage {
     }
 
     // ---- Getters ---- //
-    // Get text and attribute values
+    // Get text and attribute values - with trimming
     public String getText(WebElement element) {
         waitForVisibilityOfElementLocated(element);
-        return element.getText();
-    }
-
-    public List<String> getAllOptionsText(WebElement selectElement, By optionLocator) {
-        waitForNestedElementToBePresent(selectElement, optionLocator);
-        List<WebElement> elements = driver.findElements(optionLocator);
-
-        List<String> elementTexts = new ArrayList<>();
-        for (WebElement element : elements) {
-            String text = getText(element); // Get the visible text of the element
-            elementTexts.add(text); // Add the text to a new list of Strings
-        }
-        return elementTexts;
+        return element.getText().trim();
     }
 
     public String getFieldValue(WebElement field) {
         waitForVisibilityOfElementLocated(field);
-        return field.getAttribute("value");
+        return field.getAttribute("value").trim();
     }
 
     // ---- Utility Methods ---- //

@@ -1,10 +1,12 @@
 package pages;
 
 import config.Routes;
+import model.UserAccount;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import reports.ExtentReportManager;
 
 /**
  * Page Object for Account management page.
@@ -15,6 +17,10 @@ public class AccountPage extends CommonPage {
     // ============================================
     // ---- Page Elements ----
     // ============================================
+
+    // ---- Main form ----
+    @FindBy (css = "form")
+    private WebElement formAccount;
 
     // ---- Form fields ----
     @FindBy (id = "taiKhoan")
@@ -60,25 +66,18 @@ public class AccountPage extends CommonPage {
         driver.get(url(Routes.ACCOUNT));
     }
 
-    // ---- Get field values ----
-    public String getUsername() {
-        return getFieldValue(txtUsername);
+    // ---- Waits ----
+    public void waitForAccountForm(){
+        LOG.info("Wait for Account form to be visible");
+        waitForVisibilityOfElementLocated(formAccount);
     }
 
-    public String getFullName() {
-        return getFieldValue(txtFullName);
+    public void waitForUpdateAlert(){
+        waitForVisibilityOfElementLocated(alertFormUpdate);
     }
 
-    public String getEmail() {
-        return getFieldValue(txtEmail);
-    }
-
-    public String getPhoneNumber() {
-        return getFieldValue(txtPhoneNumber);
-    }
-
-    public String getPassword() {
-        return getFieldValue(txtPassword);
+    public void waitForUpdateAlertToDisappear() {
+        waitForInvisibilityOfElementLocated(alertFormUpdate);
     }
 
     // ---- Form interactions: fill/update fields, click buttons ----
@@ -117,21 +116,51 @@ public class AccountPage extends CommonPage {
         click(btnSaveChanges);
     }
 
-    // ---- Messages and alerts ----
-    public void waitForUpdateAlert(){
-        waitForVisibilityOfElementLocated(alertFormUpdate);
+    // ---- Getters ----
+    //  Get field values
+    public String getUsername() {
+        return getFieldValue(txtUsername);
     }
 
-    public void waitForUpdateAlertToDisappear() {
-        waitForInvisibilityOfElementLocated(alertFormUpdate);
+    public String getFullName() {
+        return getFieldValue(txtFullName);
+    }
+
+    public String getEmail() {
+        return getFieldValue(txtEmail);
+    }
+
+    public String getPhoneNumber() {
+        return getFieldValue(txtPhoneNumber);
+    }
+
+    public String getPassword() {
+        return getFieldValue(txtPassword);
+    }
+
+    /**
+     * Get all account data as UserAccount object.
+     * Useful for verification against expected data.
+     *
+     * @return UserAccount object populated with current UI values
+     */
+    public UserAccount getAccountData() {
+        return UserAccount.builder()
+                .taiKhoan(getUsername())
+                .hoTen(getFullName())
+                .email(getEmail())
+                .soDt(getPhoneNumber())
+                .matKhau(getPassword())
+                .build();
+    }
+
+    // Get alerts and validation errors visibility and text
+    public boolean isUpdateAlertDisplayed() {
+        return isElementDisplayedShort(alertFormUpdate);
     }
 
     public String getUpdateAlertText() {
         return getText(alertFormUpdate);
-    }
-
-    public boolean isUpdateAlertDisplayed() {
-        return isElementDisplayedShort(alertFormUpdate);
     }
 
     public boolean isNameValidationErrorDisplayed() {
@@ -157,5 +186,4 @@ public class AccountPage extends CommonPage {
     public String getPasswordValidationErrorText() {
         return getText(lblPasswordError);
     }
-
 }

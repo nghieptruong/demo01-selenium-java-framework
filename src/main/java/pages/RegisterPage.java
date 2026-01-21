@@ -1,6 +1,7 @@
 package pages;
 
 import config.Routes;
+import model.ui.RegisterInputs;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -110,8 +111,19 @@ public class RegisterPage extends CommonPage {
         click(btnRegister);
     }
 
-    public void fillAndSubmitRegisterForm(String username, String password, String confirmPassword, String fullName, String email) {
+    public void fillRegisterFormThenSubmit(String username, String password, String confirmPassword, String fullName, String email) {
         fillRegisterForm(username, password, confirmPassword, fullName, email);
+        clickRegister();
+    }
+
+    public void fillRegisterFormThenSubmit(RegisterInputs inputValues) {
+        fillRegisterForm(
+                inputValues.getUsername(),
+                inputValues.getPassword(),
+                inputValues.getConfirmPassword(),
+                inputValues.getFullName(),
+                inputValues.getEmail()
+        );
         clickRegister();
     }
     
@@ -147,7 +159,7 @@ public class RegisterPage extends CommonPage {
     }
 
     public boolean isRegisterSuccessAlertDisplayed() {
-        return isElementDisplayedShort(alertRegisterSuccess);
+        return isElementDisplayed(alertRegisterSuccess);
     }
 
     public String getRegisterSuccessMsgText() {
@@ -180,7 +192,7 @@ public class RegisterPage extends CommonPage {
 
         // Dynamically construct locator: id = "{fieldId}-helper-text"
         String errorElementId = fieldId + "-helper-text";
-        return driver.findElement(By.id(errorElementId));
+        return waitForVisibilityOfElementLocatedBy(By.id(errorElementId));
     }
     
 }

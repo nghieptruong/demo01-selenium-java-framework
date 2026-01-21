@@ -15,9 +15,22 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:2.25.1")
     implementation("org.apache.logging.log4j:log4j-api:2.25.1")
     implementation("com.aventstack:extentreports:5.1.2")
-    implementation("commons-io:commons-io:2.20.0")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
+
     implementation("net.datafaker:datafaker:2.3.1")
+    implementation("io.rest-assured:rest-assured:5.5.6") {
+        exclude group: "org.codehaus.jackson"
+    }
+    implementation("commons-io:commons-io:2.20.0")
+    implementation("org.apache.johnzon:johnzon-core:1.2.21")
+    implementation("org.apache.johnzon:johnzon-jsonb:1.2.21")
+
+    implementation("io.rest-assured:json-path:5.5.6")
+    implementation("io.rest-assured:json-schema-validator:5.5.6")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
+    implementation("com.google.code.gson:gson:2.13.2")
+
+    implementation("org.yaml:snakeyaml:2.5")
 
     compileOnly 'org.projectlombok:lombok:1.18.42' // Use the latest version
     annotationProcessor 'org.projectlombok:lombok:1.18.42'

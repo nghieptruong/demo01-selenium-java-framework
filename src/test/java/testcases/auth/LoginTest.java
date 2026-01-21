@@ -1,8 +1,8 @@
 package testcases.auth;
 
 import base.BaseTest;
-import helpers.Messages;
-import helpers.TestUserProvider;
+import helpers.utils.MessagesUI;
+import helpers.providers.TestUserProvider;
 import model.TestUser;
 import model.TestUserType;
 import org.testng.annotations.*;
@@ -12,8 +12,8 @@ import reports.ExtentReportManager;
 
 import java.time.Instant;
 
-import static helpers.SoftAssertionHelper.*;
-import static helpers.AuthVerificationHelper.verifyLoginSuccess;
+import static helpers.utils.SoftAssertionHelper.*;
+import static helpers.verifications.AuthVerificationHelper.verifyLoginSuccess;
 
 public class LoginTest extends BaseTest {
 
@@ -24,43 +24,40 @@ public class LoginTest extends BaseTest {
     public void setupClass() {
         // Initialize user once for the entire class
         // This runs BEFORE DataProvider, so DataProvider can use it
-        user = TestUserProvider.getUser(TestUserType.basicUser);
+        user = TestUserProvider.getUser(TestUserType.USER_BASIC);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setUpMethod() {
         loginPage = new LoginPage(getDriver());
-
         ExtentReportManager.info("Test user: " + user.getUsername());
-        ExtentReportManager.info("Step 1: Navigate to Login page");
-
+        ExtentReportManager.info("Navigate to Login page");
         loginPage.navigateToLoginPage();
     }
 
     @Test(groups = {"integration", "auth", "login", "smoke", "critical"})
     public void testValidLogin() {
-        // Use SoftAssert for multiple related checks (alert displayed + message text + user logged in)
-        // This allows us to see the full picture if something fails
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit login form with valid credentials");
+        ExtentReportManager.info("Fill valid credentials and submit login form");
         loginPage.fillLoginFormAndSubmit(user.getUsername(), user.getPassword());
 
-        ExtentReportManager.info("Step 3: Verify login success");
+        // Verify login success: alert displayed + message text + top bar user profile
+        ExtentReportManager.info("Verify successful login");
         verifyLoginSuccess(loginPage, getDriver(), softAssert);
 
-        softAssert.assertAll();  // Reports all failures together
+        softAssert.assertAll();
     }
 
     @Test(groups = {"integration", "auth", "login"})
     public void testValidLogin_UsernameCaseInsensitive() {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit login form with valid username (different casing) and valid password");
+        ExtentReportManager.info("Fill username in different casing and valid password and submit login form");
         String modifiedUsername = user.getUsername().toUpperCase();
         loginPage.fillLoginFormAndSubmit(modifiedUsername, user.getPassword());
 
-        ExtentReportManager.info("Step 3: Verify login success");
+        ExtentReportManager.info("Verify successful login");
         verifyLoginSuccess(loginPage, getDriver(), softAssert);
 
         softAssert.assertAll();
@@ -70,10 +67,10 @@ public class LoginTest extends BaseTest {
     public void testInvalidLogin_EmptyPassword() {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit login form with valid username and empty password");
+        ExtentReportManager.info("Submit login form with valid username and empty password");
         loginPage.fillLoginFormAndSubmit(user.getUsername(), "");
 
-        ExtentReportManager.info("Step 3: Verify password error message");
+        ExtentReportManager.info("Verify password error message");
         verifyEmptyPasswordError(softAssert);
 
         softAssert.assertAll();
@@ -91,10 +88,10 @@ public class LoginTest extends BaseTest {
     public void testInvalidLogin_InvalidPassword(String username, String password, String scenario) {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit form with invalid scenario: " + scenario);
+        ExtentReportManager.info("Submit form with invalid scenario: " + scenario);
         loginPage.fillLoginFormAndSubmit(username, password);
 
-        ExtentReportManager.info("Step 3: Verify login failure");
+        ExtentReportManager.info("Verify login failure");
         verifyInvalidCredentialsError(softAssert);
 
         softAssert.assertAll();
@@ -107,7 +104,7 @@ public class LoginTest extends BaseTest {
 
         // Only verify text if error message is displayed
         if (errorMsgDisplayed) {
-            String expectedMsg = Messages.getRequiredFieldError();
+            String expectedMsg = MessagesUI.getRequiredFieldError();
             String actualMsg = loginPage.getPasswordValidationText();
             verifySoftEquals(actualMsg, expectedMsg, "Empty password error message text", getDriver(), softAssert);
         }
@@ -124,7 +121,7 @@ public class LoginTest extends BaseTest {
 
         // Verify error message text (only if alert is displayed)
         if (alertDisplayed) {
-            String expectedMsg = Messages.getLoginErrorMessage();
+            String expectedMsg = MessagesUI.getLoginErrorMessage();
             String actualMsg = loginPage.getLoginErrorMsgText();
             verifySoftEquals(actualMsg, expectedMsg, "Login error alert text", getDriver(), softAssert);
         }

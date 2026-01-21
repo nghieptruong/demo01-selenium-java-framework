@@ -33,7 +33,7 @@ public class CommonPage extends BasePage {
      * Wait for application to redirect to showtime page by checking URL.
      * Returns true when the URL changes to the expected showtime page within the default timeout.
      */
-    public boolean isRedirectedToShowtimePage(String showtimeId) {
+    public boolean isOnShowtimePage(String showtimeId) {
         String showtimeUrl = String.format(url(Routes.SHOWTIME), showtimeId);
         return waitForUrl(showtimeUrl);
     }

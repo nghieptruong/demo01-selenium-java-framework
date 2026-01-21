@@ -21,8 +21,4 @@ public class HomePage extends CommonPage {
         driver.get(url(Routes.HOME));
     }
 
-    public boolean isOnHomePage() {
-        return waitForUrlContains(Routes.HOME);
-    }
-
 }

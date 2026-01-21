@@ -17,12 +17,13 @@
     <test name="Booking Test">
         <classes>
             <class name="testcases.booking.BookingTest" />
-        </classes>
+                   </classes>
     </test>
 
     <test name="Browsing and Exploration Test">
         <classes>
-            <class name="testcases.browsing.ShowtimeFilterTest" />
+            <class name="testcases.browsing.MovieDropdownsFilterTest" />
+            <class name="testcases.browsing.MovieDropdownsDataConsistencyTest" />
         </classes>
     </test>
 

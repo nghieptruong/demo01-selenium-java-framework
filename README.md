@@ -14,6 +14,7 @@ A robust, scalable, and feature-rich Selenium test automation framework built wi
 - **Thread-Safe** - ThreadLocal WebDriver for parallel test execution
 - **API Integration** - API clients for test data discovery and verification
 - **Test Data Generation** - Dynamic test data generation using DataFaker library
+- **Reduced Boilerplate** - Lombok annotations (@Data) eliminate boilerplate code in model classes
 
 
 ## Tech Stack

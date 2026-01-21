@@ -1,6 +1,7 @@
 package pages;
 
 import config.Routes;
+import model.ui.LoginInputs;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -75,6 +76,11 @@ public class LoginPage extends CommonPage {
         enterPassword(password);
         clickLoginButton();
     }
+
+    public void fillLoginFormAndSubmit(LoginInputs loginInputs) {
+        fillLoginFormAndSubmit(loginInputs.getTaiKhoan(), loginInputs.getMatKhau());
+    }
+
     
     // ---- Messages and alerts ----
     public boolean isInvalidPasswordMsgDisplayed() {

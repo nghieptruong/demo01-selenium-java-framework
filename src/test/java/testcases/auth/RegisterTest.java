@@ -1,10 +1,10 @@
 package testcases.auth;
 
 import base.BaseTest;
-import helpers.Messages;
-import helpers.SoftAssertionHelper;
-import helpers.TestUserProvider;
-import model.RegisterRequest;
+import helpers.utils.MessagesUI;
+import helpers.utils.SoftAssertionHelper;
+import helpers.providers.TestUserProvider;
+import model.ui.RegisterInputs;
 import model.TestUser;
 import model.TestUserType;
 import org.testng.annotations.*;
@@ -12,34 +12,34 @@ import org.testng.asserts.SoftAssert;
 import pages.RegisterPage;
 import reports.ExtentReportManager;
 
-import static helpers.AuthTestDataGenerator.*;
-import static helpers.AuthVerificationHelper.verifyRegisterSuccessMsg;
+import static helpers.providers.AuthTestDataGenerator.*;
+import static helpers.verifications.AuthVerificationHelper.verifyRegisterSuccessMsg;
 
 public class RegisterTest extends BaseTest {
 
     private RegisterPage registerPage;
+    private RegisterInputs formInputs;
 
     @BeforeMethod(alwaysRun = true)
     public void setUpMethod() {
         registerPage = new RegisterPage(getDriver());
-        ExtentReportManager.info("Step 1: Navigate to Register Page");
+
+        // Generate valid form inputs as base for use in tests
+        formInputs = generateValidRegisterFormInputs();
+
+        ExtentReportManager.info("Navigate to Register Page");
         registerPage.navigateToRegisterPage();
     }
 
     @Test(groups = {"component", "auth", "register", "smoke", "critical"})
     public void testValidRegister() {
         SoftAssert softAssert = new SoftAssert();
-        ExtentReportManager.info("Step 2: Submit Register form with valid data");
-        RegisterRequest registerRequest = generateValidRegisterData();
-        registerPage.fillAndSubmitRegisterForm(
-                registerRequest.getUsername(),
-                registerRequest.getPassword(),
-                registerRequest.getConfirmPassword(),
-                registerRequest.getFullName(),
-                registerRequest.getEmail()
-        );
 
-        ExtentReportManager.info("Step 3: Verify Register Success message");
+        ExtentReportManager.info("Submit Register form with valid data");
+        // Fill and submit form with valid inputs
+        registerPage.fillRegisterFormThenSubmit(formInputs);
+
+        ExtentReportManager.info("Verify Register Success message");
         verifyRegisterSuccessMsg(registerPage, getDriver(), softAssert);
 
         softAssert.assertAll();
@@ -49,18 +49,14 @@ public class RegisterTest extends BaseTest {
     public void testInvalidRegister_BlankField() {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit Register form with one blank field: Email");
-        RegisterRequest request = generateValidRegisterData();
-        registerPage.fillAndSubmitRegisterForm(
-                request.getUsername(),
-                request.getPassword(),
-                request.getConfirmPassword(),
-                request.getFullName(),
-                "" // Blank Email
-        );
+        ExtentReportManager.info("Submit Register form with one blank field: Email");
+        // Clear email field to simulate blank input
+        formInputs.setEmail("");
+        // Fill and submit form
+        registerPage.fillRegisterFormThenSubmit(formInputs);
 
-        ExtentReportManager.info("Step 3: Verify field validation error");
-        String expectedMsg = Messages.getRequiredFieldError();
+        ExtentReportManager.info("Verify field validation error");
+        String expectedMsg = MessagesUI.getRequiredFieldError();
         verifyFieldErrorMsg("email", expectedMsg, softAssert);
 
         softAssert.assertAll();
@@ -70,20 +66,15 @@ public class RegisterTest extends BaseTest {
     public void testInvalidRegister_InvalidInput() {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit Register form with one blank field: Full Name");
-        RegisterRequest request = generateValidRegisterData();
+        ExtentReportManager.info("Submit Register form with one blank field: Full Name");
+        // Set full name to invalid value containing numbers
         String invalidFullName = generateInvalidNameContainingNumbers();
+        formInputs.setFullName(invalidFullName);
+        // Fill and submit form
+        registerPage.fillRegisterFormThenSubmit(formInputs);
 
-        registerPage.fillAndSubmitRegisterForm(
-                request.getUsername(),
-                request.getPassword(),
-                request.getConfirmPassword(),
-                invalidFullName, // Invalid Full Name
-                request.getEmail()
-        );
-
-        ExtentReportManager.info("Step 3: Verify field validation error");
-        String expectedMsg = Messages.getNameContainsNumberError();
+        ExtentReportManager.info("Verify field validation error");
+        String expectedMsg = MessagesUI.getNameContainsNumberError();
         verifyFieldErrorMsg("fullName", expectedMsg, softAssert);
 
         softAssert.assertAll();
@@ -93,21 +84,15 @@ public class RegisterTest extends BaseTest {
     public void testInvalidRegister_MismatchedPasswords() {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit Register form with mismatched passwords");
-        RegisterRequest request = generateValidRegisterData();
-        String password = request.getPassword();
-        String mismatchedPassword = generateNewPassword(password);
+        ExtentReportManager.info("Submit Register form with mismatched confirm password");
+        // Modify confirm password to not match password
+        String mismatchedPassword = generateNewPassword(formInputs.getPassword());
+        formInputs.setConfirmPassword(mismatchedPassword);
+        // Fill and submit form
+        registerPage.fillRegisterFormThenSubmit(formInputs);
 
-        registerPage.fillAndSubmitRegisterForm(
-                request.getUsername(),
-                password,
-                mismatchedPassword,
-                request.getFullName(),
-                request.getEmail()
-        );
-
-        ExtentReportManager.info("Step 3: Verify field validation error");
-        String expectedMsg = Messages.getPasswordMismatchError();
+        ExtentReportManager.info("Verify field validation error");
+        String expectedMsg = MessagesUI.getPasswordMismatchError();
         verifyFieldErrorMsg("confirmPassword", expectedMsg, softAssert);
 
         softAssert.assertAll();
@@ -118,19 +103,17 @@ public class RegisterTest extends BaseTest {
     public void testInvalidRegister_ExistingUsername() {
         SoftAssert softAssert = new SoftAssert();
 
-        ExtentReportManager.info("Step 2: Submit Register form with existing username");
-        RegisterRequest request = generateValidRegisterData();
-        TestUser existingUser = TestUserProvider.getUser(TestUserType.basicUser);
+        ExtentReportManager.info("Submit Register form with existing username");
+        RegisterInputs request = generateValidRegisterFormInputs();
+        // Get existing username from test user for simplicity - can also get from API if needed
+        TestUser existingUser = TestUserProvider.getUser(TestUserType.USER_BASIC);
+        // Set existing username in form inputs
+        formInputs.setUsername(existingUser.getUsername());
+        // Fill and submit form
+        registerPage.fillRegisterFormThenSubmit(formInputs);
 
-        registerPage.fillAndSubmitRegisterForm(
-                existingUser.getUsername(), // Existing username
-                request.getPassword(),
-                request.getConfirmPassword(),
-                request.getFullName(),
-                request.getEmail()
-        );
-        ExtentReportManager.info("Step 3: Verify form validation error");
-        String expectedMsg = Messages.getRegisterExistingUsernameError();
+        ExtentReportManager.info("Verify form validation error");
+        String expectedMsg = MessagesUI.getRegisterExistingUsernameError();
         verifyFormErrorAlert(expectedMsg, softAssert);
 
         softAssert.assertAll();
@@ -141,19 +124,15 @@ public class RegisterTest extends BaseTest {
         SoftAssert softAssert = new SoftAssert();
 
         ExtentReportManager.info("Step 2: Submit Register form with existing email");
-        RegisterRequest request = generateValidRegisterData();
-        TestUser existingUser = TestUserProvider.getUser(TestUserType.basicUser);
-
-        registerPage.fillAndSubmitRegisterForm(
-                request.getUsername(),
-                request.getPassword(),
-                request.getConfirmPassword(),
-                request.getFullName(),
-                existingUser.getEmail() // Existing email
-        );
+        // Get existing email from test user for simplicity - can also get from API if needed
+        TestUser existingUser = TestUserProvider.getUser(TestUserType.USER_BASIC);
+        // Set existing email in form inputs
+        formInputs.setEmail(existingUser.getEmail());
+        // Fill and submit form
+        registerPage.fillRegisterFormThenSubmit(formInputs);
 
         ExtentReportManager.info("Step 3: Verify form validation error");
-        String expectedMsg = Messages.getRegisterExistingEmailError();
+        String expectedMsg = MessagesUI.getRegisterExistingEmailError();
         verifyFormErrorAlert(expectedMsg, softAssert);
 
         softAssert.assertAll();
@@ -181,5 +160,4 @@ public class RegisterTest extends BaseTest {
             SoftAssertionHelper.verifySoftEquals(actualMsg, expectedMsg, fieldName + " error message text", getDriver(), softAssert);
         }
     }
-
 }
