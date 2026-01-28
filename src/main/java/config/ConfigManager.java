@@ -77,6 +77,18 @@ public class ConfigManager {
         return url;
     }
 
+    public static String getDefaultUserUsername() {
+        return getProperty("default.username");
+    }
+
+    public static String getDefaultUserPassword() {
+        return getProperty("default.password");
+    }
+
+    public static String getDefaultUserEmail() {
+        return getProperty("default.email");
+    }
+
     /**
      * Get the default explicit wait timeout in seconds.
      * Used by WebDriverWait in BasePage for standard wait operations.

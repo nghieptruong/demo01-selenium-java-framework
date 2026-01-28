@@ -1,6 +1,7 @@
 package helpers.verifications;
 
 import helpers.providers.MessagesProvider;
+import model.enums.RegisterField;
 import org.openqa.selenium.WebDriver;
 import org.testng.asserts.SoftAssert;
 import pages.CommonPage;
@@ -96,5 +97,65 @@ public class AuthVerificationHelper {
         verifySoftFalse(page.topBarNavigation.isUserProfileVisible(),
                 "User profile should not be visible after logout", driver, softAssert);
     }
-}
 
+    public static void verifyRegisterFieldValidationMsg(RegisterPage registerPage, RegisterField fieldType, String expectedMsg, WebDriver driver, SoftAssert softAssert) {
+        boolean errorDisplayed = registerPage.isFieldValidationMsgDisplayed(fieldType);
+        verifySoftTrue(errorDisplayed, fieldType + " field error is displayed", driver, softAssert);
+
+        if (errorDisplayed) {
+            String actualMsg = registerPage.getFieldValidationText(fieldType);
+            SoftAssertionHelper.verifySoftEquals(actualMsg, expectedMsg, fieldType + " error message text", driver, softAssert);
+        }
+    }
+
+    public static void verifyRegisterFieldValidationMsgNotDisplayed(RegisterPage registerPage, RegisterField fieldType, WebDriver driver, SoftAssert softAssert) {
+        boolean isMsgDisappeared = registerPage.isFieldValidationMsgNotDisplayed(fieldType);
+        verifySoftTrue(isMsgDisappeared, fieldType + " field error is not displayed", driver, softAssert);
+    }
+
+    public static void verifyRegisterFormErrorAlert(RegisterPage registerPage, String expectedMsg, WebDriver driver, SoftAssert softAssert) {
+        // Verify error alert is displayed
+        boolean errorDisplayed = SoftAssertionHelper.verifySoftTrue(registerPage.isRegisterErrorAlertDisplayed(),
+                "Register error alert is displayed", driver, softAssert);
+
+        // Verify error message text
+        if (errorDisplayed) {
+            String actualMsg = registerPage.getRegisterErrorMsgText();
+            SoftAssertionHelper.verifySoftEquals(actualMsg, expectedMsg, "Register form error message text", driver, softAssert);
+        }
+    }
+
+    public static void verifyInvalidCredentialsLoginError(LoginPage loginPage, WebDriver driver, SoftAssert softAssert) {
+        // Verify login error alert displayed
+        boolean alertDisplayed = verifySoftTrue(loginPage.isLoginErrorAlertDisplayed(),
+                "Login error alert is displayed", driver, softAssert);
+
+        // Verify error message text (only if alert is displayed)
+        if (alertDisplayed) {
+            String expectedMsg = MessagesProvider.getLoginErrorMessage();
+            String actualMsg = loginPage.getLoginErrorMsgText();
+            verifySoftEquals(actualMsg, expectedMsg, "Login error alert text", driver, softAssert);
+        }
+
+        // Verify user is not logged in
+        verifySoftFalse(loginPage.topBarNavigation.isUserProfileVisible(),
+                "User profile link should not be visible", driver, softAssert);
+    }
+
+    public static void verifyEmptyPasswordLoginError(LoginPage loginPage, WebDriver driver, SoftAssert softAssert) {
+        boolean errorMsgDisplayed = verifySoftTrue(loginPage.isPasswordValidationMsgDisplayed(),
+                "Password error message is displayed", driver, softAssert);
+
+        // Only verify text if error message is displayed
+        if (errorMsgDisplayed) {
+            String expectedMsg = MessagesProvider.getRequiredFieldError();
+            String actualMsg = loginPage.getPasswordValidationText();
+            verifySoftEquals(actualMsg, expectedMsg, "Empty password error message text", driver, softAssert);
+        }
+
+        // Verify user is not logged in
+        verifySoftFalse(loginPage.topBarNavigation.isUserProfileVisible(),
+                "User profile link should not be visible", driver, softAssert);
+    }
+
+}

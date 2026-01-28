@@ -19,16 +19,16 @@ A robust, scalable, and feature-rich Selenium test automation framework built wi
 
 ## Tech Stack
 | Technology | Version | Purpose |
-|------------|---------|---------|
-| **Java** | 11+ | Programming Language |
+|------------|--------|---------|
+| **Java** | 21     | Programming Language |
 | **Selenium WebDriver** | 4.35.0 | Browser Automation |
 | **TestNG** | 7.11.0 | Test Framework |
-| **Gradle** | 8.x | Build Tool |
+| **Gradle** | 8.x    | Build Tool |
 | **Log4j2** | 2.25.1 | Logging |
-| **ExtentReports** | 5.1.2 | Test Reporting |
+| **ExtentReports** | 5.1.2  | Test Reporting |
 | **Apache Commons IO** | 2.20.0 | File Utilities |
 | **Jackson** | 2.17.0 | JSON Processing |
-| **DataFaker** | 2.3.1 | Test Data Generation |
+| **DataFaker** | 2.3.1  | Test Data Generation |
 | **Lombok** | 1.18.42 | Code Generation |
 
 
@@ -110,7 +110,7 @@ Before running the tests, ensure you have the following installed:
 
 3. **Verify installation:**
    ```bash
-   gradlew clean test --tests testcases.auth.RegisterTest
+   gradlew clean test --tests testcases.registration.RegisterTest
    ```
    
 ## Configuration
@@ -244,17 +244,17 @@ gradlew test -Dgroups=smoke,auth
 
 ```bash
 # Run a specific test class
-gradlew test --tests testcases.auth.RegisterTest
+gradlew test --tests testcases.registration.RegisterTest
 
 # Run a specific test method
-gradlew test --tests testcases.auth.RegisterTest.testValidRegister
+gradlew test --tests testcases.registration.RegisterTest.testValidRegister
 ```
 
 ### Run Tests by Package
 
 ```bash
 # All authentication tests
-gradlew test --tests "testcases.auth.*"
+gradlew test --tests "testcases.registration.*"
 
 # All E2E tests
 gradlew test --tests "testcases.e2e.*"

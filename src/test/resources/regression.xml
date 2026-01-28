@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Regression Suite" parallel="classes" thread-count="5">
+    <listeners>
+        <listener class-name="listeners.TestListener" />
+    </listeners>
+
+    <test name="Registration And Authentication Tests">
+        <classes>
+            <class name="testcases.registration.TC01_RegisterWithValidInputsTest" />
+            <class name="testcases.registration.TC04_RegisterWithExistingUsernameTest" />
+            <class name="testcases.registration.TC05_RegisterWithExistingEmailTest" />
+            <class name="testcases.authentication.TC16_LoginWithValidCredentialsTest" />
+            <class name="testcases.authentication.TC17_LoginWithInvalidCredentialsTest" />
+            <class name="testcases.authentication.TC18_LoginWithEmptyPasswordTest" />
+            <class name="testcases.authentication.TC19_PasswordCaseSensitiveTest"></class>
+            <class name="testcases.authentication.TC21_LogoutTest" />
+        </classes>
+    </test>
+
+    <test name="Account Management Tests">
+        <classes>
+            <class name="testcases.account.TC23_AccountPageDisplaysCorrectUserInfoTest" />
+            <class name="testcases.account.TC24_UpdateValidNewUserInfoTest" />
+            <class name="testcases.account.TC25_UpdateValidNewPasswordTest" />
+            <class name="testcases.account.TC28_UpdateWithExistingEmailTest" />
+            <class name="testcases.account.TC29_UsernameReadonlyTest" />
+            <class name="testcases.account.TC30_UserTypeReadonlyTest" />
+        </classes>
+    </test>
+
+    <test name="Browsing and Exploration Tests">
+        <classes>
+            <class name="testcases.browsing.TC35_DropdownDisplaysCorrectDataTest" />
+            <class name="testcases.browsing.TC36_DropdownAppliedFiltersNavigationTest" />
+        </classes>
+    </test>
+
+    <test name="Booking Tests">
+        <classes>
+            <class name="testcases.booking.TC32_UserSeatSelectionAndConfirmationTest" />
+            <class name="testcases.booking.TC33_GuestBookingLoginRequestTest" />
+        </classes>
+    </test>
+
+</suite>

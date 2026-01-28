@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import model.enums.UserType;
 
 /**
  * Base user account data model.
@@ -21,5 +22,5 @@ public class UserAccount {
     protected String matKhau;
 
     @lombok.Builder.Default
-    protected String maLoaiNguoiDung = "KhachHang";
+    protected final String maLoaiNguoiDung = UserType.CUSTOMER.getLabel();
 }

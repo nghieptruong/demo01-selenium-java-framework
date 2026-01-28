@@ -46,7 +46,7 @@ public class SoftAssertionHelper {
      */
     public static boolean verifySoftTrue(boolean condition, String description, WebDriver driver, SoftAssert softAssert) {
         if (condition) {
-            ExtentReportManager.pass(description);
+//            ExtentReportManager.pass(description);
             LOG.info("Assertion PASSED: " + description);
             return true;
         } else {
@@ -70,7 +70,7 @@ public class SoftAssertionHelper {
      */
     public static boolean verifySoftFalse(boolean condition, String description, WebDriver driver, SoftAssert softAssert) {
         if (!condition) {
-            ExtentReportManager.pass(description);
+//            ExtentReportManager.pass(description);
             LOG.info("Assertion PASSED: " + description);
             return true;
         } else {
@@ -95,13 +95,36 @@ public class SoftAssertionHelper {
      */
     public static <T> void verifySoftEquals(T actual, T expected, String objectToVerify, WebDriver driver, SoftAssert softAssert) {
         if ((actual == null && expected == null) || (actual != null && actual.equals(expected))) {
-            ExtentReportManager.pass(objectToVerify + " is correct");
+//            ExtentReportManager.pass(objectToVerify + " is correct");
             LOG.info("Assertion PASSED: " + objectToVerify + " is correct");
         } else {
             String message = objectToVerify + " is incorrect: actual='" + actual + "', expected='" + expected + "'";
             ExtentReportManager.fail(message);
             LOG.error("Assertion FAILED: " + message);
             captureScreenshot(driver, Reporter.getCurrentTestResult().getName());
+            softAssert.fail(message);
+        }
+    }
+
+    /**
+     * Verify two objects are equal with soft assertion.
+     * Works with any type: String, Integer, List, Map, custom objects, etc.
+     * Does NOT CAPTURE SCREENSHOT - used for non-UI related verification
+     *
+     * @param <T> The type of objects being compared
+     * @param actual The actual value
+     * @param expected The expected value
+     * @param objectToVerify Description of what is being checked
+     * @param softAssert The SoftAssert instance to collect failures
+     */
+    public static <T> void verifySoftEquals(T actual, T expected, String objectToVerify, SoftAssert softAssert) {
+        if ((actual == null && expected == null) || (actual != null && actual.equals(expected))) {
+//            ExtentReportManager.pass(objectToVerify + " is correct");
+            LOG.info("Assertion PASSED: " + objectToVerify + " is correct");
+        } else {
+            String message = objectToVerify + " is incorrect: actual='" + actual + "', expected='" + expected + "'";
+            ExtentReportManager.fail(message);
+            LOG.error("Assertion FAILED: " + message);
             softAssert.fail(message);
         }
     }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Smoke Suite" parallel="classes" thread-count="5">
+    <listeners>
+        <listener class-name="listeners.TestListener" />
+    </listeners>
+
+    <test name="Smoke Tests">
+       <classes>
+           <class name="testcases.registration.TC01_RegisterWithValidInputsTest" />
+           <class name="testcases.authentication.TC16_LoginWithValidCredentialsTest" />
+           <class name="testcases.authentication.TC21_LogoutTest" />
+           <class name="testcases.account.TC24_UpdateValidNewUserInfoTest" />
+           <class name="testcases.account.TC25_UpdateValidNewPasswordTest" />
+           <class name="testcases.browsing.TC36_DropdownAppliedFiltersNavigationTest" />
+           <class name="testcases.booking.TC32_UserSeatSelectionAndConfirmationTest" />
+       </classes>
+    </test>
+
+</suite>

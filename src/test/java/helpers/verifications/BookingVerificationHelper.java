@@ -1,6 +1,8 @@
 package helpers.verifications;
 
 import helpers.providers.MessagesProvider;
+import model.api.response.ShowtimeBooking;
+import model.ui.ShowtimeDetails;
 import org.openqa.selenium.WebDriver;
 import org.testng.asserts.SoftAssert;
 import pages.BookingPage;
@@ -17,6 +19,20 @@ import static helpers.verifications.SoftAssertionHelper.*;
  * <p>Uses soft assertions for multiple related checks and E2E test compatibility.
  */
 public class BookingVerificationHelper {
+
+    public static void verifyBookingPageDisplaysCorrectDetails(BookingPage bookingPage, ShowtimeBooking showtime, WebDriver driver, SoftAssert softAssert) {
+        ShowtimeDetails displayedDetails = bookingPage.getShowtimeDetailsFromSummary();
+        ShowtimeDetails expectedDetails = new ShowtimeDetails();
+
+        expectedDetails.setCinemaBranchName(showtime.getCinemaBranchName())
+                .setCinemaAddress(showtime.getCinemaAddress())
+                .setTheaterName(showtime.getTheaterName())
+                .setMovieName(showtime.getMovieName())
+                .setShowtimeDateTime(showtime.getShowingDateTimeNormalized());
+
+        verifySoftEquals(displayedDetails, expectedDetails,
+                "Showtime details displayed on booking page", driver, softAssert);
+    }
 
     /**
      * Verify booking success - dialog displayed with correct text, seats no longer available after booking.

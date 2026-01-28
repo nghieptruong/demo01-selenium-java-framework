@@ -2,10 +2,16 @@ package pages;
 
 import config.Routes;
 import model.UserAccount;
+import model.enums.AccountDataField;
+import model.enums.UserType;
+import model.ui.OrderEntry;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import pages.components.OrderHistory;
 import pages.components.PopupDialog;
 
 /**
@@ -17,38 +23,22 @@ public class AccountPage extends CommonPage {
     // ============================================
     // ---- Page Elements ----
     // ============================================
-
     // ---- Form container ----
     @FindBy (css = "form")
-    private WebElement frmContainer;
+    private WebElement frmUserInfo;
 
     // ---- Form fields ----
-    @FindBy (id = "taiKhoan")
-    private WebElement txtUsername;
-    @FindBy (id = "matKhau")
-    private WebElement txtPassword;
-    @FindBy (id = "hoTen")
-    private WebElement txtFullName;
-    @FindBy (id = "email")
-    private WebElement txtEmail;
-    @FindBy (id = "soDt")
-    private WebElement txtPhoneNumber;
+    @FindBy (css = "select[name='maLoaiNguoiDung']")
+    private WebElement selUserType;
 
     // ---- Form button ----
     @FindBy (xpath = "//button[.='Cập Nhật']")
     private WebElement btnSaveChanges;
 
-    // ---- Form validation messages ----
-    @FindBy(id = "hoTen-helper-text")
-    private WebElement lblFullNameError;
-    @FindBy (id = "email-helper-text")
-    private WebElement lblEmailError;
-    @FindBy (id = "matKhau-helper-text")
-    private WebElement lblPasswordError;
-
     // ---- Components ----
     // Popup dialog for update response - success and error
     private PopupDialog dlgResponse;
+    private OrderHistory orderHistory;
 
     // ============================================
     // Constructor
@@ -57,6 +47,7 @@ public class AccountPage extends CommonPage {
         super(driver);
         PageFactory.initElements(driver, this);
         this.dlgResponse = new PopupDialog(driver);
+        this.orderHistory = new OrderHistory(driver);
     }
 
     // ============================================
@@ -69,51 +60,47 @@ public class AccountPage extends CommonPage {
         driver.get(url(Routes.ACCOUNT));
     }
 
-    // ---- Waits ----
-    public void waitForAccountFormToAppear(){
-        LOG.info("Wait for Account form to be visible");
-        waitForVisibilityOfElementLocated(frmContainer);
+    // ---- Wait ----
+    public void waitForAccountFormDisplay() {
+        waitForVisibilityOfElementLocated(frmUserInfo);
     }
 
     // ---- Form interactions: fill/update fields, click buttons ----
     public void changeName(String newName) {
-        clear(txtFullName);
-        enterText(txtFullName, newName);
+        updateInputField(AccountDataField.FULL_NAME, newName);
     }
 
     public void changeEmail(String newEmail) {
-        clear(txtEmail);
-        enterText(txtEmail, newEmail);
+        updateInputField(AccountDataField.EMAIL, newEmail);
     }
 
     public void changePhoneNumber(String newPhoneNumber) {
-        clear(txtPhoneNumber);
-        enterText(txtPhoneNumber, newPhoneNumber);
+        updateInputField(AccountDataField.PHONE_NUMBER, newPhoneNumber);
     }
 
-    public void changeAccountInfo(String newName, String newEmail, String newPhoneNumber) {
+    public void changeUserInfoAndSave(String newName, String newEmail, String newPhoneNumber) {
         changeName(newName);
         changeEmail(newEmail);
         changePhoneNumber(newPhoneNumber);
+        clickSaveBtn();
     }
 
-    public void changePassword(String newPassword) {
-        clear(txtPassword);
-        enterText(txtPassword, newPassword);
+    public void changePasswordAndSave(String newPassword) {
+        updateInputField(AccountDataField.PASSWORD, newPassword);
+        clickSaveBtn();
     }
 
-    public void changeUsername(String newUsername) {
-        clear(txtUsername);
-        enterText(txtUsername, newUsername);
+    public void attemptToChangeUsername(String newUsername) {
+        updateInputField(AccountDataField.USERNAME, newUsername);
+    }
+
+    public void attemptToChangeUserTypeToAdmin() {
+        WebElement selUserType = getInputField(AccountDataField.USER_TYPE);
+        selectDropdownOptionByValue(selUserType, UserType.ADMIN.getLabel());
     }
 
     public void clickSaveBtn() {
         click(btnSaveChanges);
-    }
-
-    public void saveChangesAndWaitForSuccessDialog() {
-        clickSaveBtn();
-        dlgResponse.waitForDialogToBeVisible();
     }
 
     public void closeSuccessDialog() {
@@ -121,26 +108,34 @@ public class AccountPage extends CommonPage {
         dlgResponse.waitForDialogToBeInvisible();
     }
 
-    // ---- Getters ----
+    // ---- Getters for Account Form ----
+    public boolean isAccountFormDisplayed() {
+        return isElementDisplayed(frmUserInfo);
+    }
+
     //  Get field values
     public String getUsername() {
-        return getFieldValue(txtUsername);
+        return getFieldValue(getInputField(AccountDataField.USERNAME));
     }
 
     public String getFullName() {
-        return getFieldValue(txtFullName);
+        return getFieldValue(getInputField(AccountDataField.FULL_NAME));
     }
 
     public String getEmail() {
-        return getFieldValue(txtEmail);
+        return getFieldValue(getInputField(AccountDataField.EMAIL));
     }
 
     public String getPhoneNumber() {
-        return getFieldValue(txtPhoneNumber);
+        return getFieldValue(getInputField(AccountDataField.PHONE_NUMBER));
     }
 
     public String getPassword() {
-        return getFieldValue(txtPassword);
+        return getFieldValue(getInputField(AccountDataField.PASSWORD));
+    }
+
+    public String getUserType() {
+        return getFieldValue(getInputField(AccountDataField.USER_TYPE));
     }
 
     /**
@@ -150,12 +145,19 @@ public class AccountPage extends CommonPage {
      * @return UserAccount object populated with current UI values
      */
     public UserAccount getAccountData() {
+        boolean isFormDisplayed = isAccountFormDisplayed();
+
+        if  (!isFormDisplayed) {
+            throw new NoSuchElementException("Account Form is not displayed");
+        }
+
         return UserAccount.builder()
                 .taiKhoan(getUsername())
                 .hoTen(getFullName())
                 .email(getEmail())
                 .soDt(getPhoneNumber())
                 .matKhau(getPassword())
+                .maLoaiNguoiDung(getUserType())
                 .build();
     }
 
@@ -169,27 +171,60 @@ public class AccountPage extends CommonPage {
     }
 
     // Get validation error state and text
-    public boolean isNameValidationMsgDisplayed() {
-        return isElementDisplayedShort(lblFullNameError);
+    public boolean isFieldValidationMsgDisplayed(AccountDataField field) {
+        return isElementDisplayed(getByLblFieldValidationMsg(field));
     }
 
-    public String getNameValidationMsgText() {
-        return getText(lblFullNameError);
+    public String getValidationMsgText(AccountDataField field) {
+        WebElement lblValidationMsg = waitForVisibilityOfElementLocatedBy(getByLblFieldValidationMsg(field));
+        return getText(lblValidationMsg);
     }
 
-    public boolean isEmailValidationMsgDisplayed() {
-        return isElementDisplayedShort(lblEmailError);
+    // ---- Getters for Order History ----
+    public boolean isOrderHistorySectionDisplayed() {
+        return orderHistory.isOrderHistoryDisplayed();
     }
 
-    public String getEmailValidationMsgText() {
-        return getText(lblEmailError);
+    public Integer getTotalOrderCount() {
+        return orderHistory.getOrderCount();
     }
 
-    public boolean isPasswordValidationMsgDisplayed() {
-        return isElementDisplayedShort(lblPasswordError);
+    public OrderEntry getLastOrderEntryDetails() {
+        return orderHistory.getLastOrderEntryDetails();
     }
 
-    public String getPasswordValidationMsgText() {
-        return getText(lblPasswordError);
+    // Private helpers
+    private WebElement getInputField(AccountDataField field) {
+        if (field.equals(AccountDataField.USER_TYPE)) {
+            return selUserType;
+        }
+
+        String fieldId = field.getFieldId();
+        return waitForVisibilityOfElementLocatedBy(By.id(fieldId));
     }
+
+    private By getByLblFieldValidationMsg(AccountDataField field) {
+       switch (field) {
+           case FULL_NAME:
+           case EMAIL:
+           case PHONE_NUMBER:
+           case PASSWORD:
+               String fieldId = field.getFieldId();
+               String lblValidationId = fieldId + "-helper-text";
+               return By.id(lblValidationId);
+           case USER_TYPE:
+           case USERNAME:
+               throw new IllegalArgumentException(field + "is read only. No field validation message exists.");
+           default:
+               throw new IllegalArgumentException("Invalid field" + field);
+       }
+    }
+
+    private void updateInputField(AccountDataField field, String newValue) {
+        LOG.info("Clear field: " + field + " and enter new value: " + newValue);
+        WebElement inputField = getInputField(field);
+        clear(inputField);
+        enterText(inputField, newValue);
+    }
+
 }

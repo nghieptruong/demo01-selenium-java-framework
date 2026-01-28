@@ -72,15 +72,15 @@ public class BaseTest {
             }
 
             String errorMsg = throwable != null ? throwable.getMessage() : "Unknown error";
-            ExtentReportManager.fail("Test failed: " + errorMsg);
+            ExtentReportManager.fail("Test FAILED: " + errorMsg);
 
         } else if (result.getStatus() == ITestResult.SUCCESS) {
             LOG.info("Test PASSED: " + result.getName());
-            ExtentReportManager.pass("Test completed successfully");
+            ExtentReportManager.pass("Test PASSED successfully");
 
         } else if (result.getStatus() == ITestResult.SKIP) {
             LOG.warn("Test SKIPPED: " + result.getName());
-            ExtentReportManager.skip("Test skipped: " + result.getThrowable());
+            ExtentReportManager.skip("Test SKIPPED: " + result.getThrowable());
         }
 
         getDriver().quit();

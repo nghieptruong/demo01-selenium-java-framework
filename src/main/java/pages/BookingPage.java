@@ -1,6 +1,8 @@
 package pages;
 
 import config.Routes;
+import model.enums.BookingSummaryField;
+import model.ui.ShowtimeDetails;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -8,7 +10,10 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import pages.components.PopupDialog;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static utils.DateTimeNormalizer.normalize;
 
 /**
  * Page Object for Showtime Booking page.
@@ -29,6 +34,9 @@ public class BookingPage extends CommonPage {
     @FindBy(xpath = "//button[contains(., 'ĐẶT VÉ')]")
     private WebElement btnBookTickets;
 
+    @FindBy(xpath= "//button[.='ĐẶT VÉ']//ancestor::div[1]")
+    private WebElement divSummarySection;
+
     // ---- Components ----
     // Popup dialog for booking response - success, empty selection error, unauthenticated error
     private PopupDialog dlgResponse;
@@ -42,19 +50,19 @@ public class BookingPage extends CommonPage {
         this.dlgResponse = new PopupDialog(driver);
     }
 
+    // ============================================
+    // ---- Public Methods  ----
+    // ============================================
+
+    // ---- Navigation ----
     public void navigateToShowtimePage(String showtimeId) {
         LOG.info("Navigate to Booking page for showtime: " + showtimeId);
         driver.get(url(String.format(Routes.SHOWTIME, showtimeId)));
     }
 
-    // ============================================
-    // ---- Public Methods  ----
-    // ============================================
-
     // ---- Wait Helpers  ----
     /**
-     * Wait for the showtime page to fully load.
-     * Waits for the booking button to be visible, which is always present regardless of seat availability.
+     * Wait for the seat map to fully load - regardless of seat availability
      * Use this after page refresh or navigation to ensure page is ready.
      */
     public void waitForSeatMapToLoad() {
@@ -62,7 +70,7 @@ public class BookingPage extends CommonPage {
         waitForVisibilityOfAllElementsLocated(btnAllSeats);
     }
 
-    // ---- Actions ----
+    // ---- Interactions with seat map and dialog ----
     public void selectSeatBySeatNumber(String seatNumber) {
         LOG.info("Select Seat Number: " + seatNumber);
         By seatLocator = By.xpath(String.format("//button[.='%s']", seatNumber));
@@ -96,8 +104,20 @@ public class BookingPage extends CommonPage {
         dlgResponse.waitForDialogToBeInvisible();
     }
 
+    // Confirm booking and get purchase timestamp based on success dialog appearance
+    public String confirmBookingAndGetPurchaseTimestamp() {
+        clickBookTicketsButton();
+        dlgResponse.waitForDialogToBeVisible();
+
+        LocalDateTime now = LocalDateTime.now();   // Get current date and time
+        String datetimeString = normalize(now);
+        LOG.info("Purchase Timestamp: " + datetimeString);
+
+        return datetimeString;
+    }
+
     // ---- Getters ----
-    // Get list of available seat numbers
+    // Seat availability states and seat numbers
     public List<String> getAvailableSeatNumbers() {
         LOG.info("Get Available Seat Numbers");
         waitForSeatMapToLoad();
@@ -106,7 +126,6 @@ public class BookingPage extends CommonPage {
                 .toList();
     }
 
-    // Check single seat availability (button with seat number is present and visible)
     public boolean isSeatAvailable(String seatNumber) {
         waitForSeatMapToLoad();
         try {
@@ -118,12 +137,33 @@ public class BookingPage extends CommonPage {
         }
     }
 
-    // Check multiple seats availability
     public boolean areSeatsAvailable(List<String> seatNumbers) {
         return seatNumbers.stream().allMatch(this::isSeatAvailable);
     }
 
-    // Get booking dialog state and text
+    // Summary section details
+    public ShowtimeDetails getShowtimeDetailsFromSummary() {
+        ShowtimeDetails showtimeDetails = new ShowtimeDetails();
+
+        showtimeDetails.setMovieName(getSummaryFieldValue(BookingSummaryField.MOVIE_NAME));
+        showtimeDetails.setCinemaBranchName(getSummaryFieldValue(BookingSummaryField.CINEMA_BRANCH_NAME));
+        showtimeDetails.setCinemaAddress(getSummaryFieldValue(BookingSummaryField.CINEMA_ADDRESS));
+        showtimeDetails.setTheaterName(getSummaryFieldValue(BookingSummaryField.THEATER_NAME));
+        showtimeDetails.setShowtimeDateTime(normalize(getSummaryFieldValue(BookingSummaryField.SHOWING_DATETIME)));
+
+        return showtimeDetails;
+    }
+
+    public List<String> getSelectedSeatNumbersInSummary() {
+        String seatNumbersStr = getSummaryFieldValue(BookingSummaryField.SEAT_NUMBERS).replaceAll("Ghế", "");
+        return List.of(seatNumbersStr.split(",\\s*"));
+    }
+
+    public String getTotalPriceInSummary() {
+        return getSummaryFieldValue(BookingSummaryField.PRICE);
+    }
+
+    // Dialog visibility and text
     public boolean isBookingDialogDisplayed() {
         return dlgResponse.isDialogDisplayed();
     }
@@ -131,4 +171,31 @@ public class BookingPage extends CommonPage {
     public String getBookingDialogHeader() {
         return dlgResponse.getDialogTitle();
     }
+
+    // ============================================
+    // ---- Private Helper Methods ----
+    // ============================================
+    private WebElement getSummaryFieldElement(BookingSummaryField field) {
+        String labelText = field.getLabel();
+
+        if (labelText == null) {
+            LOG.warn("Unknown booking summary field type: " + field);
+            return null;
+        }
+
+        String fieldXPath = String.format(".//*[text()='%s']//parent::div", labelText);
+        By fieldLocator = By.xpath(fieldXPath);
+
+        return waitForVisibilityOfNestedElementLocatedBy(divSummarySection, fieldLocator);
+    }
+
+    private String getSummaryFieldValue(BookingSummaryField field) {
+        WebElement fieldElement = getSummaryFieldElement(field);
+        String fullText = getText(fieldElement);
+
+        // Extract the value after the label text
+        String labelText = field.getLabel();
+        return fullText.replace(labelText, "").trim();
+    }
+
 }

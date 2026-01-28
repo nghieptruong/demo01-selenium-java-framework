@@ -2,6 +2,7 @@ package model.api.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import utils.DateTimeNormalizer;
 
 import java.util.List;
 
@@ -53,10 +54,21 @@ public class ShowtimeBooking {
         return thongTinPhim.getTenCumRap();
     }
 
-
+    public String getCinemaAddress() {
+        return thongTinPhim.getDiaChi();
+    }
 
     public String getMovieName() {
         return thongTinPhim.getTenPhim();
+    }
+
+    public String getTheaterName() {
+        return thongTinPhim.getTenRap();
+    }
+
+    public String getShowingDateTimeNormalized() {
+        String dateTime = thongTinPhim.getNgayChieu() + " " + thongTinPhim.getGioChieu();
+        return DateTimeNormalizer.normalize(dateTime);
     }
 
     public List<String> getAvailableSeats() {

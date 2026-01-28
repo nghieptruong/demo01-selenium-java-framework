@@ -12,7 +12,7 @@ import java.util.List;
 public class DateTimeNormalizer {
 
     // Standard format for normalized datetime
-    private static final DateTimeFormatter STANDARD_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    public static final DateTimeFormatter STANDARD_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // Common datetime formats from API and UI
     // Note: UI should ideally use a consistent format, but we handle known variations here.
@@ -20,7 +20,9 @@ public class DateTimeNormalizer {
             DateTimeFormatter.ofPattern("dd/MM/yyyy ~ HH:mm"),  // UI format: 24/12/2021 ~ 13:35
             DateTimeFormatter.ofPattern("dd/MM/yyyy -HH:mm"),   // Alternate UI format: 17/10/2021 -08:10
             DateTimeFormatter.ofPattern("dd-MM-yyyy ~ HH:mm"),  // Alternate UI format:  01-01-2019  ~  14:10
-            DateTimeFormatter.ISO_LOCAL_DATE_TIME               // API format: 2021-10-17T08:43:00
+            DateTimeFormatter.ofPattern("dd-MM-yyyy | HH:mm"),  // Alternate UI format: 11-01-2026 | 16:48
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME,              // API format: 2021-10-17T08:43:00
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")     // Joint from API date and time fields
     );
 
     /**
@@ -49,6 +51,13 @@ public class DateTimeNormalizer {
         }
 
         throw new IllegalArgumentException("Unable to parse datetime: " + datetime + ". Check supported formats.");
+    }
+
+    public static String normalize(LocalDateTime datetime) {
+        if (datetime == null) {
+            throw new IllegalArgumentException("Datetime object cannot be null");
+        }
+        return datetime.format(STANDARD_FORMAT);
     }
 
 }

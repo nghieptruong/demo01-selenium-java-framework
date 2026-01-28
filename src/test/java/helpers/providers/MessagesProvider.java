@@ -1,6 +1,6 @@
 package helpers.providers;
 
-import model.ui.MovieDropdownFields;
+import model.enums.MovieDropdownField;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.I18n;
@@ -25,7 +25,7 @@ public class MessagesProvider {
     }
 
     // --------------------------
-    // Auth Validation Messages
+    // Validation Messages: shared across user info forms
     // --------------------------
     public static String getRequiredFieldError() {
         return getString("auth.validation.required");
@@ -35,12 +35,20 @@ public class MessagesProvider {
         return getString("auth.validation.password.minLength");
     }
 
+    public static String getPasswordMaxLengthError() {
+        return getString("auth.validation.password.maxLength");
+    }
+
     public static String getNameContainsNumberError() {
         return getString("auth.validation.name.hasNumber");
     }
 
     public static String getPasswordMismatchError() {
         return getString("auth.validation.confirmPassword.mismatch");
+    }
+
+    public static String getEmailValidationError() {
+        return getString("auth.validation.email");
     }
 
     // --------------------------
@@ -100,7 +108,7 @@ public class MessagesProvider {
     // --------------------------
     // Dropdown Filters Error Messages
     // --------------------------
-    public static String getMissingFilterError(MovieDropdownFields fieldName) {
+    public static String getMissingFilterError(MovieDropdownField fieldName) {
         return getString("filter.missing." + fieldName.name().toLowerCase());
     }
 

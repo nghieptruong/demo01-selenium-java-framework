@@ -9,6 +9,16 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.addAll(['--release', '21'])
+}
+
 dependencies {
     implementation("org.seleniumhq.selenium:selenium-java:4.35.0")
     implementation("org.testng:testng:7.11.0")
@@ -38,14 +48,14 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 }
 
-test {
+tasks.withType(Test) {
+    systemProperty 'env', System.properties['env']
+
     useTestNG() {
         useDefaultListeners = false // Disable TestNG HTML reports (using ExtentReports instead)
-        outputDirectory = file("$projectDir/test-output") // folder chứa testNG report
-        suites "src/test/resources/testng.xml"
+        outputDirectory = file("$projectDir/test-output") // folder chứa test report
 
         def groups = System.getProperty('groups')
-
         // If the 'groups' property is provided, include only those groups
         if (groups != null) {
             useTestNG() {
@@ -57,6 +67,24 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
+    }
+}
+
+tasks.register('e2eTests', Test) {
+    useTestNG {
+        suites "src/test/resources/e2e.xml"
+    }
+}
+
+tasks.register('smokeTests', Test) {
+    useTestNG {
+        suites "src/test/resources/smoke.xml"
+    }
+}
+
+tasks.register('regressionTests', Test) {
+    useTestNG {
+        suites "src/test/resources/regression.xml"
     }
 }
 

@@ -3,10 +3,7 @@ package base;
 import config.ConfigManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,7 +11,6 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,23 +42,44 @@ public class BasePage {
     }
 
     public List<WebElement> waitForVisibilityOfAllElementsLocated(List<WebElement> elements) {
-        return wait.until(ExpectedConditions.visibilityOfAllElements(elements));
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(ConfigManager.getLongWait()));
+        return longWait.until(ExpectedConditions.visibilityOfAllElements(elements));
     }
 
-    public void waitForInvisibilityOfElementLocated(WebElement element) {
-        wait.until(ExpectedConditions.invisibilityOf(element));
+    public List<WebElement> waitForVisibilityOfAllElementsLocatedBy(By locator) {
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(ConfigManager.getLongWait()));
+        return longWait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(locator));
     }
 
     public WebElement waitForElementToBeClickable(WebElement element) {
         return wait.until(ExpectedConditions.elementToBeClickable(element));
     }
 
-    public WebElement waitForNestedElementToBePresent(WebElement parentElement, By childLocator) {
-        return wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(parentElement, childLocator));
+    public WebElement waitForVisibilityOfNestedElementLocatedBy(WebElement parentElement, By childLocator) {
+        return wait.until(ExpectedConditions.visibilityOfNestedElementsLocatedBy(parentElement, childLocator)).get(0);
+    }
+
+    public List<WebElement> waitForVisibilityOfNestedElementsLocatedBy(WebElement parentElement, By childLocator) {
+        return wait.until(ExpectedConditions.visibilityOfNestedElementsLocatedBy(parentElement, childLocator));
     }
 
     public List<WebElement> waitForAllNestedElementsToBePresent(By parentElement, By childLocator) {
-        return wait.until(ExpectedConditions.presenceOfNestedElementsLocatedBy(parentElement, childLocator));
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(ConfigManager.getLongWait()));
+        return longWait.until(ExpectedConditions.presenceOfNestedElementsLocatedBy(parentElement, childLocator));
+    }
+
+    public void waitForNestedElementToBePresent(WebElement parentElement, By childLocator) {
+        wait.until(ExpectedConditions.presenceOfNestedElementLocatedBy(parentElement, childLocator));
+    }
+
+    public void waitForInvisibilityOfElementLocated(WebElement element) {
+        WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(ConfigManager.getShortWait()));
+        shortWait.until(ExpectedConditions.invisibilityOf(element));
+    }
+
+    public void waitForInvisibilityOfElementLocatedBy(By locator) {
+        WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(ConfigManager.getShortWait()));
+        shortWait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
     }
 
     // Wait for URL / partial URL
@@ -110,6 +127,12 @@ public class BasePage {
         element.sendKeys(value);
     }
 
+    // Blur field
+    public void blurField(WebElement field) {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].blur();", field);
+    }
+
     // Clear input field
     public void clear(WebElement element) {
         Actions actions = new Actions(driver);
@@ -123,6 +146,15 @@ public class BasePage {
     public void click(WebElement element) {
         waitForElementToBeClickable(element);
         element.click();
+    }
+
+    public void safeClick(WebElement element) {
+        try {
+            click(element);
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver)
+                    .executeScript("arguments[0].click();", element);
+        }
     }
 
     // Select dropdown option by value or visible text
@@ -165,6 +197,24 @@ public class BasePage {
         }
     }
 
+    public boolean isElementDisplayed(By locator) {
+        try {
+            waitForVisibilityOfElementLocatedBy(locator);
+            return true;
+        }  catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isElementNotDisplayed(By locator) {
+        try {
+            waitForInvisibilityOfElementLocatedBy(locator);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     // Check if element is displayed with custom timeout
     public boolean isElementDisplayedCustom(WebElement element, int timeoutSeconds) {
         try {
@@ -195,6 +245,7 @@ public class BasePage {
         int longWait = ConfigManager.getLongWait();
         return isElementDisplayedCustom(element, longWait);
     }
+
 
     // Build full URL from base URL and path
     protected String url(String path) {

@@ -1,8 +1,9 @@
 package pages.components;
 
 import base.BasePage;
+import org.openqa.selenium.interactions.Actions;
 import utils.DateTimeNormalizer;
-import model.ui.MovieDropdownFields;
+import model.enums.MovieDropdownField;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -21,39 +22,13 @@ import java.util.Map;
 public class ChainedDropdownsHome extends BasePage {
 
     // ============================================
-    // ---- Component Elements ----
+    // ---- Elements ----
     // ============================================
 
-    // ---- Dropdowns ----
-    @FindBy(css = "select[name='film']")
-    private WebElement selMovie;
-    @FindBy(css = "select[name='cinema']")
-    private WebElement selCinemaLocation;
-    @FindBy(css = "select[name='date']")
-    private WebElement selShowtime;
-
-    // ---- Buttons ----
     @FindBy(xpath = "//div[@id='homeTool']//button")
     private WebElement btnFindTickets;
 
-    // ---- Components ----
     private PopupDialog dlgMissingFilter;
-
-    // ---- Static Fields & Initialization ----
-    // Map for FilterType to HTML Select Name
-    private Map<MovieDropdownFields, String> filterSelectNameMap;
-
-    /**
-     * Initialize mapping for FilterType to HTML select name attributes.
-     * This eliminates switch statements in getOptionLocator().
-     */
-    private void initializeFilterSelectNameMap() {
-        // Map FilterType to HTML select name attribute
-        filterSelectNameMap = new HashMap<>();
-        filterSelectNameMap.put(MovieDropdownFields.MOVIE, "film");
-        filterSelectNameMap.put(MovieDropdownFields.CINEMA, "cinema");
-        filterSelectNameMap.put(MovieDropdownFields.SHOWTIME, "date");
-    }
 
     // ============================================
     // ---- Constructor ----
@@ -61,7 +36,6 @@ public class ChainedDropdownsHome extends BasePage {
     public ChainedDropdownsHome(WebDriver driver) {
         super(driver);
         PageFactory.initElements(driver, this);
-        initializeFilterSelectNameMap();
         this.dlgMissingFilter = new PopupDialog(driver);
     }
 
@@ -70,13 +44,13 @@ public class ChainedDropdownsHome extends BasePage {
     // ============================================
 
     // ---- Wait Methods ----
+    // Wait for first movie option to load / be present
     public void waitForDropdownsToLoad() {
-        waitForVisibilityOfElementLocated(selMovie);
-        waitForMovieOptionsToLoad();
-    }
+        WebElement selMovie = getSelectFilter(MovieDropdownField.MOVIE);
+        Actions actions = new Actions(driver);
+        actions.scrollToElement(selMovie).perform();
 
-    public void waitForMovieOptionsToLoad(){
-        By movieOption = getOptionLocator(MovieDropdownFields.MOVIE);
+        By movieOption = getOptionLocator(MovieDropdownField.MOVIE);
         waitForNestedElementToBePresent(selMovie, movieOption);
     }
 
@@ -84,19 +58,20 @@ public class ChainedDropdownsHome extends BasePage {
     // Interactions with dropdowns and buttons
     public void clickApplyFilterBtn() {
         LOG.info("Click Find Tickets button");
-        click(btnFindTickets);
+        // need to force click because current component is partially overlapped / hidden under top bar (UI bug)
+        safeClick(btnFindTickets);
     }
 
     public void selectMovieByMovieTitle(String movieTitle) {
-        selectDropdownOptionByVisibleText(selMovie, movieTitle);
+        selectDropdownOptionByVisibleText(getSelectFilter(MovieDropdownField.MOVIE), movieTitle);
     }
 
     public void selectCinemaBranchByName(String cinemaLocation) {
-        selectDropdownOptionByVisibleText(selCinemaLocation, cinemaLocation);
+        selectDropdownOptionByVisibleText(getSelectFilter(MovieDropdownField.CINEMA), cinemaLocation);
     }
 
     public void selectShowtimeById(String showtimeId) {
-        selectDropdownOptionByValue(selShowtime, showtimeId);
+        selectDropdownOptionByValue(getSelectFilter(MovieDropdownField.SHOWTIME), showtimeId);
     }
 
     public void selectAllFiltersAndConfirm(String movieTitle, String cinemaLocation, String showtimeId) {
@@ -108,40 +83,12 @@ public class ChainedDropdownsHome extends BasePage {
         clickApplyFilterBtn();
     }
 
-    // Flows of actions to trigger specific missing filter alert
-    /**
-     * Trigger missing filter alert by selecting filters before the specified missing one.
-     * Uses ordinal-based logic: movie (0) &lt; cinema (1) &lt; showtime (2).
-     *
-     * @param missingFilter The filter that should be missing (not selected)
-     * @param movieTitle Movie title to select (if needed)
-     * @param cinemaLocation Cinema location to select (if needed)
-     */
-    public void triggerMissingFilterAlert(MovieDropdownFields missingFilter, String movieTitle, String cinemaLocation) {
-        switch (missingFilter) {
-            case MOVIE:
-                clickApplyFilterBtn();
-                break;
-            case CINEMA:
-                selectMovieByMovieTitle(movieTitle);
-                clickApplyFilterBtn();
-                break;
-            case SHOWTIME:
-                selectMovieByMovieTitle(movieTitle);
-                selectCinemaBranchByName(cinemaLocation);
-                clickApplyFilterBtn();
-                break;
-            default:
-                LOG.warn("Unknown missing filter: " + missingFilter);
-        }
-    }
-
     // ---- Getters ----
     // Get mapping of option IDs to titles/names/datetimes for each dropdown
     public Map<String, String> getMovieOptionIdToTitleMap() {
         Map<String, String> movieTitlesWithIds = new HashMap<>();
-        By bySelMovie = getSelectLocator(MovieDropdownFields.MOVIE);
-        By byOptionMovie = getOptionLocator(MovieDropdownFields.MOVIE);
+        By bySelMovie = getSelectLocator(MovieDropdownField.MOVIE);
+        By byOptionMovie = getOptionLocator(MovieDropdownField.MOVIE);
 
         List<WebElement> movieOptions = waitForAllNestedElementsToBePresent(bySelMovie, byOptionMovie);
 
@@ -154,18 +101,19 @@ public class ChainedDropdownsHome extends BasePage {
     }
 
     public Map<String, String> getCinemaBranchOptionIdToNameMap() {
+
         Map<String, String> cinemaNamesWithIds = new HashMap<>();
-        By bySelCinema = getSelectLocator(MovieDropdownFields.CINEMA);
-        By byOptionCinema = getOptionLocator(MovieDropdownFields.CINEMA);
+        List<WebElement> cinemaOptions;
+
+        By bySelCinema = getSelectLocator(MovieDropdownField.CINEMA);
+        By byOptionCinema = getOptionLocator(MovieDropdownField.CINEMA);
 
         try {
-            waitForNestedElementToBePresent(selCinemaLocation, byOptionCinema);
+           cinemaOptions = waitForAllNestedElementsToBePresent(bySelCinema, byOptionCinema);
         } catch (Exception e) {
             LOG.warn("No cinema options found in dropdown");
             return cinemaNamesWithIds; // Return empty map if no options found
         }
-
-        List<WebElement> cinemaOptions = waitForAllNestedElementsToBePresent(bySelCinema, byOptionCinema);
 
         for (WebElement option : cinemaOptions) {
             String name = getText(option);
@@ -177,17 +125,15 @@ public class ChainedDropdownsHome extends BasePage {
 
     public Map<String, String> getShowtimeOptionIdToDateTimeMap() {
         Map<String, String> showtimeDatetimesWithIds = new HashMap<>();
-        By bySelShowtime = getSelectLocator(MovieDropdownFields.SHOWTIME);
-        By byOptionShowtime = getOptionLocator(MovieDropdownFields.SHOWTIME);
-
+        By bySelShowtime = getSelectLocator(MovieDropdownField.SHOWTIME);
+        By byOptionShowtime = getOptionLocator(MovieDropdownField.SHOWTIME);
+        List<WebElement> showtimeOptions;
         try {
-            waitForNestedElementToBePresent(selShowtime, byOptionShowtime);
+            showtimeOptions = waitForAllNestedElementsToBePresent(bySelShowtime, byOptionShowtime);
         } catch (Exception e) {
             LOG.warn("No showtime options found in dropdown");  // consider logging currently selected movie/cinema for debugging
             return showtimeDatetimesWithIds;                    // Return empty map if no options found
         }
-
-        List<WebElement> showtimeOptions = waitForAllNestedElementsToBePresent(bySelShowtime, byOptionShowtime);
 
         for (WebElement option : showtimeOptions) {
             String datetime = getText(option);
@@ -212,30 +158,29 @@ public class ChainedDropdownsHome extends BasePage {
     // ============================================
     // ---- Private Helper Methods ----
     // ============================================
-    /**
-     * Get the locator for dropdown options based on filter type.
-     * Uses Map lookup instead of switch for better maintainability.
-     *
-     * @param filterType The type of filter (movie, cinema, showtime)
-     * @return By locator for the dropdown options
-     */
-    private By getOptionLocator(MovieDropdownFields filterType) {
-        String selectName = filterSelectNameMap.get(filterType);
+    private By getSelectLocator(MovieDropdownField field) {
+        String selectName = field.getLabel();
         if (selectName == null) {
-            LOG.warn("Unknown filter type: " + filterType);
+            LOG.warn("Unknown filter type: " + field);
+            return null;
+        }
+        String selectXPath = String.format("//select[@name='%s']", selectName);
+        return By.xpath(selectXPath);
+    }
+
+    private WebElement getSelectFilter(MovieDropdownField field) {
+        By bySelFilter = getSelectLocator(field);
+        return waitForVisibilityOfElementLocatedBy(bySelFilter);
+    }
+
+    private By getOptionLocator(MovieDropdownField field) {
+        String selectName = field.getLabel();
+        if (selectName == null) {
+            LOG.warn("Unknown filter type: " + field);
             return null;
         }
         String optionXPath = String.format("//select[@name='%s']//option[not(@disabled)]", selectName);
         return By.xpath(optionXPath);
     }
 
-    private By getSelectLocator(MovieDropdownFields filterType) {
-        String selectName = filterSelectNameMap.get(filterType);
-        if (selectName == null) {
-            LOG.warn("Unknown filter type: " + filterType);
-            return null;
-        }
-        String selectXPath = String.format("//select[@name='%s']", selectName);
-        return By.xpath(selectXPath);
-    }
 }

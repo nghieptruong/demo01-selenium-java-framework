@@ -60,7 +60,7 @@ public class TopBarNavigation extends BasePage {
        click(btnCancelLogout);
     }
 
-    public void logout() {
+    public void clickLogoutLinkAndConfirm() {
          clickLogoutLink();
          waitForVisibilityOfElementLocated(alertLogoutConfirmation);
          clickConfirmLogoutButton();
@@ -74,6 +74,11 @@ public class TopBarNavigation extends BasePage {
     public void waitForUserProfileLink() {
         waitForVisibilityOfElementLocated(lnkUserProfile);
     }
+
+    public void waitForLoginLink() {
+        waitForVisibilityOfElementLocated(lnkLogin);
+    }
+
     public String getUserProfileName() {
         return getText(lnkUserProfile);
     }

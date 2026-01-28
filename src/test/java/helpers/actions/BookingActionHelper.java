@@ -1,14 +1,12 @@
 package helpers.actions;
 
-import helpers.providers.ShowtimeSampleProvider;
+import helpers.providers.BookingSampleProvider;
 import helpers.providers.RandomSampleProvider;
-import helpers.providers.TestUserProvider;
 import model.api.response.ShowtimeBooking;
-import model.TestUser;
-import model.TestUserType;
+import model.ui.OrderEntry;
+import model.ui.ShowtimeDetails;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pages.LoginPage;
 import pages.BookingPage;
 import reports.ExtentReportManager;
 
@@ -22,15 +20,6 @@ public class BookingActionHelper {
 
     private static final Logger LOG = LogManager.getLogger(BookingActionHelper.class);
 
-    public static void loginAsBookingUser(LoginPage loginPage) {
-        TestUser testUser = TestUserProvider.getUser(TestUserType.USER_BOOKING);
-        LOG.info("Logging in as booking test user: " + testUser.getUsername());
-
-        loginPage.navigateToLoginPage();
-        loginPage.fillLoginFormThenSubmit(testUser.getUsername(), testUser.getPassword());
-        loginPage.topBarNavigation.waitForUserProfileLink();
-    }
-
     /**
      * Navigates to a random showtime page that has available seats (at least 5 seats available if not specified).
      *
@@ -38,43 +27,31 @@ public class BookingActionHelper {
      * @throws Exception if no showtimes with available seats are found
      */
     public static void navigateToSampleShowtimePageWithAvailability(BookingPage bookingPage) throws Exception {
-        ShowtimeBooking showtime = ShowtimeSampleProvider.getShowtimeWithAvailableSeats();
+        ShowtimeBooking showtime = BookingSampleProvider.getShowtimeWithAvailableSeats();
         String showtimeId = showtime.getShowtimeId();
 
         LOG.info("Navigating to showtime page with ID: " + showtimeId);
         bookingPage.navigateToShowtimePage(showtimeId);
     }
 
-    /**
-     * Selects a specified number of available seats on the showtime page and books them.
-     * Seats are selected randomly from the available seats.
-     * Fallback to all available seats if sampleSize exceeds availability.
-     *
-     * @param bookingPage The ShowtimePage instance
-     * @param sampleSize Number of seats to select and book
-     */
-    public static void selectSampleSeatsAndBook(BookingPage bookingPage, int sampleSize) {
-        List<String> availableSeats = bookingPage.getAvailableSeatNumbers();
-        List<String> seatsToBook = RandomSampleProvider.getRandomSamplesFromList(availableSeats, sampleSize);
+    public static OrderEntry bookSeatsAndCollectOrderDetails(BookingPage bookingPage, List<String> seatsToBook) {
 
-        ExtentReportManager.info("Selecting " + seatsToBook.size() + " seats to book: " + seatsToBook);
+        ShowtimeDetails showtimeDetails = bookingPage.getShowtimeDetailsFromSummary();
+
         bookingPage.selectSeatsBySeatNumbers(seatsToBook);
-        bookingPage.clickBookTicketsButton();
+        String totalPrice = bookingPage.getTotalPriceInSummary();
+        String purchaseTimestamp = bookingPage.confirmBookingAndGetPurchaseTimestamp();
+
+        OrderEntry newOrder = new OrderEntry();
+        newOrder.setPurchaseDatetime(purchaseTimestamp)
+                .setMovieName(showtimeDetails.getMovieName())
+                .setCinemaBranchName(showtimeDetails.getCinemaBranchName())
+                .setTheaterName(showtimeDetails.getTheaterName())
+                .setPrice(Integer.parseInt(totalPrice))
+                .setSeatNumbers(seatsToBook);
+
+        ExtentReportManager.info("Complete order with details: " + newOrder);
+        return newOrder;
     }
 
-    /**
-     * Selects between 1 and 5 available seats on the showtime page by default and books them.
-     * (When no fixed sample size is specified)
-     *
-     * @param bookingPage The ShowtimePage instance
-     */
-    public static List<String> selectSampleSeatsAndBook(BookingPage bookingPage) {
-        List<String> availableSeats = bookingPage.getAvailableSeatNumbers();
-        List<String> seatsToBook = RandomSampleProvider.getRandomSamplesFromList(availableSeats, 1, 5);
-
-        ExtentReportManager.info("Selecting of " + seatsToBook.size() + " seats to book: " + seatsToBook);
-        bookingPage.selectSeatsBySeatNumbers(seatsToBook);
-        bookingPage.clickBookTicketsButton();
-        return seatsToBook;
-    }
 }

@@ -1,7 +1,8 @@
 package pages;
 
 import config.Routes;
-import model.ui.LoginInputs;
+import model.ui.LoginDataUI;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -78,7 +79,7 @@ public class LoginPage extends CommonPage {
         clickLoginButton();
     }
 
-    public void fillLoginFormThenSubmit(LoginInputs loginInputs) {
+    public void fillLoginFormThenSubmit(LoginDataUI loginInputs) {
         fillLoginFormThenSubmit(loginInputs.getTaiKhoan(), loginInputs.getMatKhau());
     }
 
@@ -93,13 +94,37 @@ public class LoginPage extends CommonPage {
     }
 
     // Get validation error state and text
-    public boolean isInvalidPasswordMsgDisplayed() {
+    public boolean isPasswordValidationMsgDisplayed() {
         return isElementDisplayedShort(lblInvalidPasswordMsg);
     }
 
     public String getPasswordValidationText() {
         return getText(lblInvalidPasswordMsg);
     }
+
+    public boolean isValidationMessageDisplayed(String fieldName) {
+       WebElement lblValidationMsg = getValidationMsgElement(fieldName);
+       return isElementDisplayedShort(lblValidationMsg);
+    }
+
+    public String getFieldValidationText(String fieldName) {
+        WebElement lblValidationMsg = getValidationMsgElement(fieldName);
+        return getText(lblValidationMsg);
+    }
+
+    private WebElement getValidationMsgElement(String fieldName) {
+        String fieldNameNormalized = fieldName.toLowerCase();
+        switch (fieldNameNormalized) {
+            case "username":
+            case "password":
+                String id = fieldNameNormalized + "-helper-text";
+                return waitForVisibilityOfElementLocatedBy(By.id(id));
+            default:
+                throw new RuntimeException("Invalid field name: " + fieldName);
+        }
+    }
+
+
 
     // Get login error alert state and text
     public boolean isLoginErrorAlertDisplayed() {
