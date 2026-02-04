@@ -6,6 +6,7 @@ import helpers.providers.TestUserProvider;
 import model.UserAccount;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -78,9 +79,11 @@ public class BaseTest {
 
     private void initializeWebDriver(String browserName) {
         driver.set(DriverManagerFactory.getDriverManager(browserName).createDriver());
-        getDriver().manage().window().maximize();
-        LOG.info("Thread: " + Thread.currentThread().threadId() + " - [setUp] - WebDriver Instance: " + getDriver());
-        LOG.info("WebDriver initialized and maximized");
+        getDriver().manage().window().setSize(new Dimension(1920, 1080));
+
+        LOG.info("Thread: " + Thread.currentThread().threadId() +
+                " - [setUp] - WebDriver Instance: " + getDriver());
+        LOG.info("WebDriver initialized with 1920x1080 resolution");
     }
 
     private void cleanupWebDriver() {
