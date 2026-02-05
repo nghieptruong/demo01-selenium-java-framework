@@ -71,7 +71,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-cred-key', url: 'git@github.com:trangle298/demo01-selenium-java-framework.git'
+                git branch: 'main', credentialsId: 'USER', url: 'git@github.com:nghieptruong/demo01-selenium-java-framework.git'
             }
         }
 
