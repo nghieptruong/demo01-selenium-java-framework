@@ -1,5 +1,7 @@
 package drivers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -11,6 +13,8 @@ import config.ConfigManager;
  * Configures ChromeDriver with options for page load strategy and automation detection.
  */
 public class ChromeDriverManager extends DriverManager {
+
+    protected final Logger LOG = LogManager.getLogger(getClass());
 
     @Override
     public WebDriver createDriver() {
@@ -31,13 +35,16 @@ public class ChromeDriverManager extends DriverManager {
             );
         } else {
             options.addArguments("--start-maximized");
+//            options.addArguments("start-maximized");
         }
 
         options.setExperimentalOption("excludeSwitches",
                 new String[]{"enable-automation"});
         options.setExperimentalOption("useAutomationExtension", false);
 
-        return new ChromeDriver(options);
+        WebDriver driver = new ChromeDriver(options);
+        LOG.info("Browser size: " + driver.manage().window().getSize());
+        return driver;
     }
 
 
