@@ -77,7 +77,7 @@ pipeline {
 
         stage("Test") {
             steps {
-                bat ".\\gradlew ${params.SUITE}"
+                bat ".\\gradlew ${params.SUITE} -Dheadless=true"
             }
             post {
                 always {
