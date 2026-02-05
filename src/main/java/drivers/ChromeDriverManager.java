@@ -25,10 +25,11 @@ public class ChromeDriverManager extends DriverManager {
         ChromeOptions options = new ChromeOptions();
         options.setPageLoadStrategy(eager ? PageLoadStrategy.EAGER : PageLoadStrategy.NORMAL);
 
+//        "--window-size=1920,1080",
         if (headless) {
             options.addArguments(
                     "--headless=new",
-                    "--window-size=1920,1080",
+                    "--screen-info={0,0 1920x1080}",
                     "--disable-gpu",
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
