@@ -78,7 +78,7 @@ public class BaseTest {
     private void initializeWebDriver(String browserName) {
         driver.set(DriverManagerFactory.getDriverManager(browserName).createDriver());
         LOG.info("Thread: " + Thread.currentThread().threadId() +
-                " - [setUp] - WebDriver Instance: " + getDriver());
+                " - [setUp] - WebDriver Instance: " + getDriver() + " (Size: " + getDriver().manage().window().getSize() + ")");
     }
 
     private void cleanupWebDriver() {
