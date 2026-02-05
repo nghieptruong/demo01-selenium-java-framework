@@ -69,6 +69,7 @@ dependencies {
 
 tasks.withType(Test) {
     systemProperty 'env', System.properties['env']
+    systemProperty 'headless', System.properties['headless']
 
     useTestNG() {
         useDefaultListeners = false // Disable TestNG HTML reports (using ExtentReports instead)
