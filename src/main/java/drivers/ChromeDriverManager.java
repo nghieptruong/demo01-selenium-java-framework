@@ -36,6 +36,7 @@ public class ChromeDriverManager extends DriverManager {
                     "--disable-dev-shm-usage"
             );
         } else {
+            LOG.info("Run with UI");
             options.addArguments("--start-maximized");
 //            options.addArguments("start-maximized");
         }
