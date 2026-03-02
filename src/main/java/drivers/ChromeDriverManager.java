@@ -1,10 +1,15 @@
 package drivers;
 
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import config.ConfigManager;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Chrome browser driver manager.
@@ -14,8 +19,25 @@ import config.ConfigManager;
 public class ChromeDriverManager extends DriverManager {
 
     @Override
-    public WebDriver createDriver() {
+    public WebDriver createLocalDriver() {
+        return new ChromeDriver(getChromeOptions());
+    }
 
+    @Override
+    public WebDriver createRemoteDriver(String remoteURL) {
+        try {
+            if(isMobile()) {
+                // create mobile driver
+                return null;
+            } else {
+                return new RemoteWebDriver(new URL(remoteURL), getChromeOptions());
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ChromeOptions getChromeOptions() {
         boolean eager = Boolean.parseBoolean(ConfigManager.getProperty("eagerPageLoadStrategy"));
         boolean headless = isHeadless();
 
@@ -37,7 +59,7 @@ public class ChromeDriverManager extends DriverManager {
                 new String[] { "enable-automation" });
         options.setExperimentalOption("useAutomationExtension", false);
 
-        return new ChromeDriver(options);
+        return options;
     }
 
     // ---- Private Helper Methods ----

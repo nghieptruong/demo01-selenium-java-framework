@@ -2,11 +2,11 @@ package base;
 
 import config.ConfigManager;
 import drivers.DriverManagerFactory;
+import enums.RunOn;
 import helpers.providers.TestUserProvider;
 import model.UserAccount;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -76,7 +76,15 @@ public class BaseTest {
     }
 
     private void initializeWebDriver(String browserName) {
-        driver.set(DriverManagerFactory.getDriverManager(browserName).createDriver());
+        //RunOn
+        RunOn runOnExecution = RunOn.fromName(ConfigManager.getProperty("runOn"));
+        String url = runOnExecution.getUrlHub();
+        if(runOnExecution == RunOn.GRID || runOnExecution == RunOn.PERFECTO) {
+            driver.set(DriverManagerFactory.getDriverManager(browserName).createRemoteDriver(url));
+        } else {
+            driver.set(DriverManagerFactory.getDriverManager(browserName).createLocalDriver());
+        }
+
         LOG.info("Thread: " + Thread.currentThread().threadId() +
                 " - [setUp] - WebDriver Instance: " + getDriver());
     }

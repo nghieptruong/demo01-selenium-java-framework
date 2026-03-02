@@ -16,5 +16,11 @@ public abstract class DriverManager {
      * 
      * @return WebDriver instance ready for use
      */
-    public abstract WebDriver createDriver();
+    public abstract WebDriver createLocalDriver();
+    public abstract WebDriver createRemoteDriver(String remoteURL);
+
+    // Check if running on mobile devices or not
+    public boolean isMobile() {
+        return false;
+    }
 }

@@ -97,7 +97,7 @@ pipeline {
                     echo "===> Executing test... "
                     
                     // Build the gradle command based on parameters
-                    def gradleCmd = ".\\gradlew ${params.SUITE} -Denv=${params.ENVIRONMENT} -Dbrowser=${params.BROWSER_NAME} -Dheadless=true"
+                    def gradleCmd = ".\\gradlew ${params.SUITE} -Denv=${params.ENVIRONMENT} -Dbrowser=${params.BROWSER_NAME} -Dheadless=true -DrunOn=${params.RUN_ON}"
                     
                     // Add parallel execution if thread count > 1
                     if (params.PARALLEL_THREAD.toInteger() > 1) {
