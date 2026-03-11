@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO">
+<Configuration status="OFF">
+    <property name="logLevel"/>
     <Appenders>
         <!-- Log ra console -->
         <Console name="Console" target="SYSTEM_OUT">
@@ -20,7 +21,7 @@
 
     <Loggers>
         <!-- Root logger cho test cases -->
-        <Root level="info">
+        <Root level="${sys:logLevel}">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="FileLogger"/>
         </Root>

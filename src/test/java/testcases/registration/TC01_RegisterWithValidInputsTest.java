@@ -16,6 +16,8 @@ public class TC01_RegisterWithValidInputsTest extends BaseTest {
     @Test(description = "Test Successful Registration")
     public void testRegisterSuccessWithValidInputs() {
 
+        LOG.debug("Debug: TC01_RegisterWithValidInputsTest");
+
         RegisterPage registerPage = new RegisterPage(getDriver());
         SoftAssert softAssert = new SoftAssert();
 
