@@ -7,6 +7,7 @@ import helpers.providers.TestUserProvider;
 import model.UserAccount;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -40,6 +41,8 @@ public class BaseTest {
 
     @BeforeMethod(alwaysRun = true)
     public void beforeMethod(Method method) {
+        ThreadContext.put("testName", method.getName());
+        ThreadContext.put("threadId", String.valueOf(Thread.currentThread().getId()));
         initializeWebDriver(resolveBrowser());
         ExtentReportManager.createTest(method.getName());
         setupTestUserIfNeeded(method);
@@ -50,6 +53,7 @@ public class BaseTest {
         logTestResult(result);
         cleanupTestUser();
         cleanupWebDriver();
+        ThreadContext.clearAll();
     }
 
     @AfterSuite(alwaysRun = true)
