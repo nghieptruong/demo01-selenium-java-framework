@@ -75,6 +75,8 @@ dependencies {
     implementation ("io.github.cdimascio:dotenv-java:${dotenvVersion}")
 }
 
+def startTimstamp = ""
+
 tasks.withType(Test) {
     systemProperty 'env', System.properties['env']
     systemProperty 'runOn', System.properties['runOn']
@@ -82,6 +84,7 @@ tasks.withType(Test) {
     systemProperty 'browser', System.properties['browser']
     systemProperty 'headless', System.properties['headless']
     systemProperty 'logLevel', System.getProperty('logLevel', 'INFO')
+    systemProperty 'startTimestamp', System.getProperty('startTimestamp', startTimstamp)
 
     useTestNG() {
         useDefaultListeners = false // Disable TestNG HTML reports (using ExtentReports instead)

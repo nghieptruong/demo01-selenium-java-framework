@@ -95,9 +95,10 @@ pipeline {
             steps {
                 script {
                     echo "===> Executing test... "
-                    
+                    def timestamp = "2026_03_12_11_00_00";
+
                     // Build the gradle command based on parameters
-                    def gradleCmd = ".\\gradlew ${params.SUITE} -Denv=${params.ENVIRONMENT} -Dbrowser=${params.BROWSER_NAME} -Dheadless=true -DrunOn=${params.RUN_ON}"
+                    def gradleCmd = ".\\gradlew ${params.SUITE} -Denv=${params.ENVIRONMENT} -Dbrowser=${params.BROWSER_NAME} -Dheadless=true -DrunOn=${params.RUN_ON} -DstartTimestamp=${timestamp}"
                     
                     // Add parallel execution if thread count > 1
                     if (params.PARALLEL_THREAD.toInteger() > 1) {
@@ -126,7 +127,7 @@ pipeline {
             post {
                 always {
                     echo " ===> Publishing test results..."
-                    archiveArtifacts artifacts: 'test-output/**', followSymlinks: false
+                    archiveArtifacts artifacts: 'test-output/${timestamp}/**', followSymlinks: false
                     publishHTML([allowMissing: false,
                                 alwaysLinkToLastBuild: true,
                                 icon: '', keepAll: true,

@@ -23,6 +23,8 @@ public class ExtentReportManager {
 
     private static ExtentReports extent;
     private static ThreadLocal<ExtentTest> test = new ThreadLocal<>(); // mỗi thread 1 ExtentTest
+//    private static final String startTestTimestamp = System.getProperty("startTimestamp");
+//    private static final String REPORT_PATH = "test-output/" + startTestTimestamp + "/ExtentReport.html";
     private static final String REPORT_PATH = "test-output/ExtentReport.html";
     private static final String SCREENSHOT_PATH = "test-output/screenshots/";
 
