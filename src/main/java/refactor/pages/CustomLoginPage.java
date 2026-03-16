@@ -8,18 +8,18 @@ public class CustomLoginPage {
     @CustomFindBy(id = "taiKhoan")
     private String txtAccountLogin;
 
-    @FindBy(id = "matKhau")
+    @CustomFindBy(id = "matKhau")
     private String txtPasswordLogin;
 
     // ---- Form button ----
-    @FindBy (css = "button[type='submit']")
+    @CustomFindBy (css = "button[type='submit']")
     private String btnLogin;
 
     // ---- Field validation message ----
-    @FindBy (id = "matKhau-helper-text")
+    @CustomFindBy (id = "matKhau-helper-text")
     private String lblInvalidPasswordMsg;
 
     // ---- Form alerts ----
-    @FindBy (css = "div[role='alert']")
+    @CustomFindBy (css = "div[role='alert']")
     private String alertLoginError;
 }
