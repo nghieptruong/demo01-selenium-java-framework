@@ -5,7 +5,7 @@
             <Routes pattern="${ctx:testName}">
                 <Route>
                     <File name="File-${ctx:testName}"
-                          fileName="test-output/${ctx:testName}-${ctx:threadId}.log">
+                          fileName="test-output/${ctx:testName:-default}-${ctx:threadId:-0}.log">
                         <PatternLayout
                                 pattern="[%d{HH:mm:ss}] [%-5level] %c{1}:%L - %msg%n"/>
                     </File>

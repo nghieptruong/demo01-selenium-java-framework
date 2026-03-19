@@ -12,9 +12,13 @@ import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import reports.ExtentReportManager;
+import utils.gson.JsonUtils;
+
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Base class for all test classes.
@@ -35,6 +39,9 @@ public class BaseTest {
 
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite() {
+        ThreadContext.put("testName", "suite");
+        ThreadContext.put("threadId", String.valueOf(Thread.currentThread().getId()));
+
         LOG.info("Initialize Extent Report");
         ExtentReportManager.initializeExtentReports();
     }
@@ -53,13 +60,13 @@ public class BaseTest {
         logTestResult(result);
         cleanupTestUser();
         cleanupWebDriver();
-        ThreadContext.clearAll();
     }
 
     @AfterSuite(alwaysRun = true)
     public void afterSuite() {
         ExtentReportManager.flushReports();
         LOG.info("Test Suite completed");
+        ThreadContext.clearAll();
     }
 
     protected WebDriver getDriver() {
@@ -150,5 +157,17 @@ public class BaseTest {
             LOG.warn("Test SKIPPED: " + result.getName());
             ExtentReportManager.skip("Test SKIPPED: " + result.getThrowable());
         }
+    }
+
+    @DataProvider(name = "getTestData", parallel = true)
+    public Object[][] getTestData(Method method) {
+        List<Map<String, String>> testData = JsonUtils.readJson(method.getDeclaringClass());
+        Object[][] data = new Object[testData.size()][1];
+
+        for (int i = 0; i < testData.size(); i++) {
+            data[i][0] = testData.get(i); // mỗi test 1 map riêng
+        }
+
+        return data;
     }
 }
