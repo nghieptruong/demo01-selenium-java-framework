@@ -10,15 +10,15 @@ public class NewWindowsTabDemo {
         WebDriver driver = new ChromeDriver();
         driver.manage().window().maximize();
 
-        //Selenium 3
+//        //Selenium 3
 //        JavascriptExecutor js = (JavascriptExecutor) driver;
 //        js.executeScript("window.open('https://google.com','_blank');");
 //        js.executeScript("window.open('https://facebook.com','_blank','width=800,height=600');");
 
-//        //Selenium 4
-        driver.switchTo().newWindow(WindowType.TAB);
-        driver.get("https://google.com");
-
+////        //Selenium 4
+//        driver.switchTo().newWindow(WindowType.TAB);
+//        driver.get("https://google.com");
+//
         driver.switchTo().newWindow(WindowType.WINDOW);
         driver.get("https://facebook.com");
 

@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 public class CDPCaptureNetworkRequest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ChromeOptions options = new ChromeOptions();
         options.setBrowserVersion("145");
         WebDriver driver = new ChromeDriver(options);
@@ -28,6 +28,8 @@ public class CDPCaptureNetworkRequest {
         });
 
         driver.get("https://demo1.cybersoft.edu.vn");
+
+        Thread.sleep(10000);
 
         driver.quit();
     }
